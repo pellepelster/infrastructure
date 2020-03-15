@@ -1,0 +1,12 @@
+- name: add user
+  user:
+    name: "{{ name }}"
+    create_home: yes
+    home: "{{ data_volume_mount_data1 }}/home/{{ name }}"
+    shell: "/bin/bash"
+    
+- name: set authorized key
+  authorized_key:
+    user: "{{ name }}"
+    state: present
+    key: "{{ key }}"    

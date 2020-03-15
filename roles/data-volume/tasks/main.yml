@@ -1,0 +1,33 @@
+- set_fact: 
+    "data_volume_mount_{{ name }}": "/srv/{{ name }}"
+
+- name: create fde password
+  copy: 
+    content: "{{ fde_password }}"
+    dest: "/root/fde_password"
+
+- name: open data device
+  luks_device:
+    name: "{{ name }}"
+    device: "{{ device }}"
+    state: opened
+    keyfile: /root/fde_password
+
+- name: create data mount dir
+  file:
+    path: "/srv/{{ name }}"
+    state: directory
+    mode: "0755"
+
+- name: mount data1 device
+  mount:
+    path: "/srv/{{ name }}"
+    fstype: btrfs
+    src: "/dev/mapper/{{ name }}"
+    state: mounted
+
+- name: remove fde password
+  file:
+    state: absent 
+    path: "/root/fde_password"
+  

@@ -1,0 +1,14 @@
+[Unit]
+Description=syncthing
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+User=backup
+Restart=always
+RestartSec=5
+ExecStart=/usr/bin/syncthing -gui-address=0.0.0.0:8384
+ExecReload=/bin/kill -HUP \$MAINPID
+
+[Install]
+WantedBy=multi-user.target

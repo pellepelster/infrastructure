@@ -1,0 +1,31 @@
+---
+    - hosts: marvin
+      become: yes
+      become_user: root
+      tasks:
+        - include_role:
+            name: common
+
+        - include_role:
+            name: 'data-volume'
+          vars:
+            name: 'data1'
+            device: '/dev/md127'
+
+        - include_role:
+            name: 'user'
+          vars:
+            name: "pelle"
+            key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
+
+        - include_role:
+            name: 'user'
+          vars:
+            name: "backup"
+            key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
+
+        - include_role:
+            name: 'syncthing'
+             
+        - debug:
+            msg: "{{ data_volume_mount_data1 }}"

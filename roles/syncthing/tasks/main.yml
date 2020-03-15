@@ -1,0 +1,30 @@
+- name: add syncthing apt signing key
+  apt_key:
+    url: https://syncthing.net/release-key.txt
+    state: present
+
+- name: add syncthing repository
+  apt_repository:
+    repo: deb https://apt.syncthing.net/ syncthing stable
+    state: present
+
+- name: install syncthing
+  apt:
+    name: syncthing
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: create systemd unit
+  template:
+    src: systemd_unit.j2
+    dest: /etc/systemd/system/syncthing.service
+
+- name: reload systemd
+  systemd:
+    daemon_reload: yes
+
+- name: restart syncthing service
+  systemd:
+    state: restarted
+    name: syncthing
