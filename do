@@ -14,15 +14,14 @@ DOCKER_IMAGE_NAME_WWW="www"
 DOCKER_ARGS="--pull --no-cache"
 DOCKER_ARGS=""
 
-source "${DIR}/ctuhl/lib/shell/log.sh"
-source "${DIR}/ctuhl/lib/shell/ruby.sh"
+source "${DIR}/solidblocks-shell/log.sh"
 
 trap task_clean SIGINT SIGTERM ERR EXIT
 
 TEMP_DIR="${DIR}/.tmp"
 mkdir -p "${TEMP_DIR}"
 
-function task_docker_login {
+function ensure_docker_login {
   pass "infrastructure/${DOMAIN}/github_access_token_rw" | docker login https://docker.pkg.github.com -u ${GITHUB_OWNER} --password-stdin
 }
 
@@ -190,6 +189,7 @@ function task_run() {
 }
 
 function task_deploy {
+  ensure_docker_login
   docker push "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME_WWW}:latest"
 }
 
@@ -247,6 +247,5 @@ case ${ARG} in
   set-github-access-token-ro) task_set_github_access_token_ro ;;
   set-cloud-api-token) task_set_cloud_api_token ;;
   set-dns-api-token) task_set_dns_api_token ;;
-  docker-login) task_docker_login ;;
   *) task_usage ;;
 esac
