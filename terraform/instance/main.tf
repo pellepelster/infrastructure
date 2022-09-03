@@ -62,3 +62,5 @@ resource "hcloud_volume_attachment" "www" {
   volume_id = data.hcloud_volume.data.id
   server_id = hcloud_server.www.id
 }
+
+

@@ -21,6 +21,15 @@ trap task_clean SIGINT SIGTERM ERR EXIT
 TEMP_DIR="${DIR}/.tmp"
 mkdir -p "${TEMP_DIR}"
 
+function task_bootstrap {
+  SOLIDBLOCKS_SHELL_VERSION="v0.0.41"
+  SOLIDBLOCKS_SHELL_CHECKSUM="7c5cb9a80649a1eb9927ec96820f9d0c5d09afa3f25f6a0f8745b99dcbf931b7"
+
+  curl -L "https://github.com/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_SHELL_VERSION}/solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip" > "solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip"
+  echo "${SOLIDBLOCKS_SHELL_CHECKSUM}  solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip" | sha256sum -c
+  unzip -o "solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip"
+}
+
 function ensure_docker_login {
   pass "infrastructure/${DOMAIN}/github_access_token_rw" | docker login https://docker.pkg.github.com -u ${GITHUB_OWNER} --password-stdin
 }
@@ -149,6 +158,19 @@ EOI
   log_divider_footer
 }
 
+function ruby_ensure_bundle {
+    local vendor_path=".vendor/bundle"
+
+    if [ ! -d ${vendor_path} ]; then
+      bundle install --path ${vendor_path}
+    fi
+
+    if [ Gemfile -nt ${vendor_path} ] || [ Gemfile.lock -nt ${vendor_path} ]; then
+      bundle
+      touch ${vendor_path}
+    fi
+}
+
 function task_test() {
   mkdir -p "${TEMP_DIR}/ssl"
   create_snakeoil_certificates "${TEMP_DIR}/ssl"
@@ -163,7 +185,7 @@ function task_test() {
 
   (
     cd ${DIR}/www/test
-    cthul_ruby_ensure_bundle
+    ruby_ensure_bundle
     bundle exec ruby runner.rb www
   )
 }
@@ -232,6 +254,7 @@ function task_set_dns_api_token {
 ARG=${1:-}
 shift || true
 case ${ARG} in
+  bootstrap) task_bootstrap "$@" ;;
   build) task_build "$@" ;;
   run) task_run "$@" ;;
   test) task_test "$@" ;;
