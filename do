@@ -14,14 +14,23 @@ DOCKER_IMAGE_NAME_WWW="www"
 DOCKER_ARGS="--pull --no-cache"
 DOCKER_ARGS=""
 
-source "${DIR}/solidblocks-shell/log.sh"
-
 trap task_clean SIGINT SIGTERM ERR EXIT
 
-TEMP_DIR="${DIR}/.tmp"
+TEMP_DIR="${DIR}/.tmp.$$"
 mkdir -p "${TEMP_DIR}"
 
-function task_bootstrap {
+function task_clean {
+  echo "cleaning up '${TEMP_DIR}'"
+  rm -rf "${TEMP_DIR}"
+
+  cd ${DIR}/www/test/www
+  docker-compose rm --force --stop
+
+  docker volume rm -f pelle-www-test-ssl
+  docker volume rm -f pelle-www-test-data
+}
+
+function bootstrap {
   SOLIDBLOCKS_SHELL_VERSION="v0.0.41"
   SOLIDBLOCKS_SHELL_CHECKSUM="7c5cb9a80649a1eb9927ec96820f9d0c5d09afa3f25f6a0f8745b99dcbf931b7"
 
@@ -29,6 +38,12 @@ function task_bootstrap {
   echo "${SOLIDBLOCKS_SHELL_CHECKSUM}  solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip" | sha256sum -c
   unzip -o "solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip"
 }
+
+if [[ ! -d "${DIR}/solidblocks-shell/log.sh" ]]; then
+  bootstrap
+fi
+
+source "${DIR}/solidblocks-shell/log.sh"
 
 function ensure_docker_login {
   pass "infrastructure/${DOMAIN}/github_access_token_rw" | docker login https://docker.pkg.github.com -u ${GITHUB_OWNER} --password-stdin
@@ -63,17 +78,6 @@ function task_build {
 function task_usage {
   echo "Usage: $0 build | test | deploy"
   exit 1
-}
-
-function task_clean {
-  echo "cleaning up '${TEMP_DIR}'"
-  rm -rf "${TEMP_DIR}"
-
-  cd ${DIR}/www/test/www
-  docker-compose rm --force --stop
-
-  docker volume rm -f pelle-www-test-ssl
-  docker volume rm -f pelle-www-test-data
 }
 
 function terraform_wrapper_do() {
@@ -254,7 +258,6 @@ function task_set_dns_api_token {
 ARG=${1:-}
 shift || true
 case ${ARG} in
-  bootstrap) task_bootstrap "$@" ;;
   build) task_build "$@" ;;
   run) task_run "$@" ;;
   test) task_test "$@" ;;

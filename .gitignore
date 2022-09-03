@@ -5,4 +5,5 @@ terraform.tfstate.backup
 .bundle/
 .vendor/
 www/test/reports/
-
+solidblocks-shell
+solidblocks-shell-*.zip
