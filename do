@@ -19,6 +19,38 @@ trap task_clean SIGINT SIGTERM ERR EXIT
 TEMP_DIR="${DIR}/.tmp.$$"
 mkdir -p "${TEMP_DIR}"
 
+###############################################################################
+# bootstrapping
+###############################################################################
+function bootstrap_solidblocks() {
+  local dir="${1:-}"
+
+  SOLIDBLOCKS_SHELL_VERSION="v0.0.41"
+  SOLIDBLOCKS_SHELL_CHECKSUM="7c5cb9a80649a1eb9927ec96820f9d0c5d09afa3f25f6a0f8745b99dcbf931b7"
+
+  if [[ ! -d "${dir}" ]]; then
+    curl -L "https://github.com/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_SHELL_VERSION}/solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip" >"solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip"
+    echo "${SOLIDBLOCKS_SHELL_CHECKSUM}  solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip" | sha256sum -c
+    unzip -o "solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip"
+  fi
+}
+
+function ensure_environment() {
+  source "${DIR}/solidblocks-shell/log.sh"
+  source "${DIR}/solidblocks-shell/utils.sh"
+  source "${DIR}/solidblocks-shell/software.sh"
+
+  software_set_export_path
+}
+
+function task_bootstrap() {
+  bootstrap_solidblocks "${DIR}/solidblocks-shell"
+  ensure_environment
+  ensure_command "pass"
+  ensure_command "docker"
+  software_ensure_terraform
+}
+
 function task_clean {
   echo "cleaning up '${TEMP_DIR}'"
   rm -rf "${TEMP_DIR}"
@@ -29,21 +61,6 @@ function task_clean {
   docker volume rm -f pelle-www-test-ssl
   docker volume rm -f pelle-www-test-data
 }
-
-function bootstrap {
-  SOLIDBLOCKS_SHELL_VERSION="v0.0.41"
-  SOLIDBLOCKS_SHELL_CHECKSUM="7c5cb9a80649a1eb9927ec96820f9d0c5d09afa3f25f6a0f8745b99dcbf931b7"
-
-  curl -L "https://github.com/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_SHELL_VERSION}/solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip" > "solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip"
-  echo "${SOLIDBLOCKS_SHELL_CHECKSUM}  solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip" | sha256sum -c
-  unzip -o "solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip"
-}
-
-if [[ ! -d "${DIR}/solidblocks-shell/log.sh" ]]; then
-  bootstrap
-fi
-
-source "${DIR}/solidblocks-shell/log.sh"
 
 function ensure_docker_login {
   pass "infrastructure/${DOMAIN}/github_access_token_rw" | docker login https://docker.pkg.github.com -u ${GITHUB_OWNER} --password-stdin
@@ -257,7 +274,14 @@ function task_set_dns_api_token {
 
 ARG=${1:-}
 shift || true
+
+case "${ARG}" in
+bootstrap) ;;
+*) ensure_environment ;;
+esac
+
 case ${ARG} in
+  bootstrap) task_bootstrap "$@" ;;
   build) task_build "$@" ;;
   run) task_run "$@" ;;
   test) task_test "$@" ;;
