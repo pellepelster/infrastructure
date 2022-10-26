@@ -2,13 +2,12 @@
 
 set -o pipefail -o errexit -o nounset
 
+CADDY_VERSION="2.5.2"
+CADDY_CHECKSUM="641908bbf6f13ee69f3c445a44012d0c3327462c00a1d47fb40f07ce5d00e31b"
+
 export DEBIAN_FRONTEND=noninteractive
 
 ${user_data_lib}
-
-function docker_login {
-  echo "${github_token}" | docker login https://docker.pkg.github.com -u ${github_owner} --password-stdin
-}
 
 function packages_update {
     apt-get update
@@ -69,35 +68,6 @@ Match User deploy
 EOF
 }
 
-function docker_systemd_config {
-cat <<-EOF
-[Unit]
-Description=%i service with docker compose
-Requires=docker.service
-After=docker.service
-
-[Service]
-Restart=always
-TimeoutStartSec=1200
-
-WorkingDirectory=/opt/dockerfiles/%i
-
-# Remove old containers, images and volumes and update it
-ExecStartPre=/usr/bin/docker-compose down -v
-ExecStartPre=/usr/bin/docker-compose rm -fv
-ExecStartPre=/usr/bin/docker-compose pull
-
-# Compose up
-ExecStart=/usr/bin/docker-compose up
-
-# Compose down, remove containers and volumes
-ExecStop=/usr/bin/docker-compose down -v
-
-[Install]
-WantedBy=multi-user.target
-EOF
-}
-
 function deploy_user_setup() {
   useradd  -s /usr/bin/nologin -d /storage/www/data/ deploy
   PASSWORD=$(uuid)
@@ -109,23 +79,6 @@ function deploy_user_setup() {
 
   echo "${deploy_public_key}" | base64 -d > /etc/ssh/authorized_keys/deploy
   chmod 644 /etc/ssh/authorized_keys/deploy
-}
-
-
-function docker_compose_config {
-cat <<-EOF
-version: "3"
-services:
-  www:
-    image: docker.pkg.github.com/pellepelster/pelle.io-infrastructure/www:latest
-    environment:
-      - "HOSTNAME=${hostname}"
-    ports:
-      - "443:443"
-      - "80:80"
-    volumes:
-      - "/storage/www:/storage"
-EOF
 }
 
 function sshd_setup() {
@@ -148,11 +101,6 @@ packages_update
 install_prerequisites
 
 ufw_setup
-docker_login
-
-docker_systemd_config > /etc/systemd/system/docker-compose@.service
-mkdir -p /opt/dockerfiles/www
-docker_compose_config > /opt/dockerfiles/www/docker-compose.yml
 
 mkdir -p /storage/www/ssl/default
 mkdir -p /storage/www/logs
@@ -160,9 +108,61 @@ mkdir -p /storage/www/data/www
 
 deploy_user_setup
 
-echo "${certificate}" | base64 -d > /storage/www/ssl/default/certificate.pem
-echo "${private_key}" | base64 -d > /storage/www/ssl/default/private_key.pem
+mkdir -p /storage/www-new
 
-systemctl daemon-reload
-systemctl enable docker-compose@www
-systemctl start docker-compose@www
+function www_systemd_config() {
+  cat <<-EOF
+[Unit]
+Description=www
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Restart=always
+RestartSec=5
+ExecStart=/usr/local/bin/caddy run --config /etc/Caddyfile
+ExecReload=/bin/kill -HUP \$MAINPID
+
+[Install]
+WantedBy=multi-user.target
+EOF
+}
+
+function www_template() {
+  cat <<EOF
+{
+    storage file_system /storage/www-new/data/
+}
+
+${domain} {
+  log {
+    output stdout
+    format console
+    level  INFO
+  }
+
+	root * /storage/www/data/www
+	file_server
+}
+EOF
+}
+
+function www_setup() {
+  www_template > /etc/Caddyfile
+  www_systemd_config >/etc/systemd/system/www.service
+  systemctl daemon-reload
+  systemctl enable www
+  systemctl restart www
+}
+
+function caddy_install() {
+  curl -L "https://github.com/caddyserver/caddy/releases/download/v$CADDY_VERSION/caddy_$${CADDY_VERSION}_linux_amd64.tar.gz" -o /tmp/caddy.tar.gz
+  echo "$CADDY_CHECKSUM  /tmp/caddy.tar.gz" | sha256sum -c
+  tar -xvf /tmp/caddy.tar.gz caddy
+  rm -f /tmp/caddy.tar.gz
+  chmod +x caddy
+  mv caddy /usr/local/bin/
+}
+
+caddy_install
+www_setup

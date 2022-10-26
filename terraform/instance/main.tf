@@ -2,13 +2,13 @@ terraform {
   required_providers {
 
     hetznerdns = {
-      source  = "timohirt/hetznerdns"
-      version = "1.1.1"
+      source = "timohirt/hetznerdns"
+      version = "2.2.0"
     }
 
     hcloud = {
       source  = "hetznercloud/hcloud"
-      version = "1.24.1"
+      version = "1.35.2"
     }
 
     template = {

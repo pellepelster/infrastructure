@@ -3,12 +3,8 @@ data "template_file" "user_data" {
   template = file("user_data.sh")
 
   vars = {
-    floating_ip = hcloud_floating_ip.www.ip_address
-
-    github_owner = var.github_owner
-    github_token = var.github_token
-
     storage_device = data.hcloud_volume.data.linux_device
+    floating_ip = hcloud_floating_ip.www.ip_address
 
     domain   = var.domain
     hostname = var.hostname
