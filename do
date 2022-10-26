@@ -32,6 +32,7 @@ function bootstrap_solidblocks() {
     curl -L "https://github.com/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_SHELL_VERSION}/solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip" >"solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip"
     echo "${SOLIDBLOCKS_SHELL_CHECKSUM}  solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip" | sha256sum -c
     unzip -o "solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip"
+    rm -f "solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip"
   fi
 }
 
@@ -64,24 +65,6 @@ function task_clean {
 
 function ensure_docker_login {
   pass "infrastructure/${DOMAIN}/github_access_token_rw" | docker login https://docker.pkg.github.com -u ${GITHUB_OWNER} --password-stdin
-}
-
-function task_generate_ssh_identities {
-  generate_ssh_identity "ecdsa"
-  generate_ssh_identity "rsa"
-}
-function generate_ssh_identity {
-  local type="${1}"
-  ssh-keygen -q -N "" -t ${type} -f "${TEMP_DIR}/ssh_host_${type}_key"
-  pass insert -m "infrastructure/${DOMAIN}/ssh_host_${type}_key" < "${TEMP_DIR}/ssh_host_${type}_key"
-  pass insert -m "infrastructure/${DOMAIN}/ssh_host_${type}_public_key" < "${TEMP_DIR}/ssh_host_${type}_key.pub"
-}
-
-function generate_deploy_ssh_identity {
-  local type="ed25519"
-  ssh-keygen -q -N "" -t ${type} -f "${TEMP_DIR}/deploy_ssh"
-  pass insert -m "infrastructure/${DOMAIN}/deploy_ssh_key" < "${TEMP_DIR}/deploy_ssh"
-  pass insert -m "infrastructure/${DOMAIN}/deploy_ssh_public_key" < "${TEMP_DIR}/deploy_ssh.pub"
 }
 
 function task_build {
@@ -126,13 +109,6 @@ function task_infra_instance {
   export TF_VAR_hostname="www"
   export TF_VAR_cloud_api_token="$(pass "infrastructure/${DOMAIN}/cloud_api_token")"
   export TF_VAR_dns_api_token="$(pass "infrastructure/${DOMAIN}/dns_api_token")"
-  export TF_VAR_ssh_identity_ecdsa_key="$(pass "infrastructure/${DOMAIN}/ssh_host_ecdsa_key" | base64 -w 0)"
-  export TF_VAR_ssh_identity_ecdsa_pub="$(pass "infrastructure/${DOMAIN}/ssh_host_ecdsa_public_key" | base64 -w 0)"
-  export TF_VAR_ssh_identity_rsa_key="$(pass "infrastructure/${DOMAIN}/ssh_host_rsa_key" | base64 -w 0)"
-  export TF_VAR_ssh_identity_rsa_pub="$(pass "infrastructure/${DOMAIN}/ssh_host_rsa_public_key" | base64 -w 0)"
-  export TF_VAR_ssh_identity_ed25519_key="$(pass "infrastructure/${DOMAIN}/ssh_host_ed25519_key" | base64 -w 0)"
-  export TF_VAR_ssh_identity_ed25519_pub="$(pass "infrastructure/${DOMAIN}/ssh_host_ed25519_public_key" | base64 -w 0)"
-  export TF_VAR_deploy_ssh_public_key="$(pass "infrastructure/${DOMAIN}/deploy_ssh_public_key" | base64 -w 0)"
 
   terraform_wrapper_do "terraform/instance" "$@"
 }
@@ -146,7 +122,7 @@ function task_infra_storage {
 
 function task_ssh_instance {
   local public_ip="$(terraform_wrapper "terraform/instance" "output" "-json" | jq -r '.public_ip.value')"
-  ssh root@${public_ip} "$@"
+  ssh -o UserKnownHostsFile=${DIR}/ssh_known_hosts root@${public_ip} "$@"
 }
 
 function task_output {
@@ -291,8 +267,7 @@ case ${ARG} in
   infra-instance) task_infra_instance "$@" ;;
   infra-storage) task_infra_storage "$@" ;;
   ssh-instance) task_ssh_instance "$@" ;;
-  generate-ssh-identities) task_generate_ssh_identities ;;
-  generate-deploy-ssh-identity) generate_deploy_ssh_identity ;;
+
   set-github-access-token-rw) task_set_github_access_token_rw ;;
   set-github-access-token-ro) task_set_github_access_token_ro ;;
   set-cloud-api-token) task_set_cloud_api_token ;;
