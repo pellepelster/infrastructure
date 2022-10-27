@@ -5,26 +5,27 @@ set -o pipefail -o errexit -o nounset
 CADDY_VERSION="2.5.2"
 CADDY_CHECKSUM="641908bbf6f13ee69f3c445a44012d0c3327462c00a1d47fb40f07ce5d00e31b"
 
-export DEBIAN_FRONTEND=noninteractive
 
 ${user_data_lib}
 
 function packages_update {
-    apt-get update
+    DEBIAN_FRONTEND=noninteractive apt-get update
+}
 
-    #apt-get \
-    #    -o Dpkg::Options::="--force-confnew" \
-    #    --force-yes \
-    #    -fuy \
-    #    dist-upgrade
+function system_update {
+    DEBIAN_FRONTEND=noninteractive apt-get \
+        -o Dpkg::Options::="--force-confnew" \
+        --assume-yes \
+        -fuy \
+        dist-upgrade
+
+  if [[ -f /var/run/reboot-required ]]; then
+    shutdown -r now
+  fi
 }
 
 function install_prerequisites {
-  apt-get install --no-install-recommends -qq -y \
-    docker.io \
-    docker-compose \
-    gnupg2 \
-    pass \
+  DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -qq -y \
     ufw \
     uuid
 }
@@ -69,7 +70,7 @@ EOF
 }
 
 function deploy_user_setup() {
-  useradd  -s /usr/bin/nologin -d /storage/www/data/ deploy
+  useradd  -s /usr/bin/nologin -d /storage/www/html/ deploy
   PASSWORD=$(uuid)
   echo -e "$${PASSWORD}\n$${PASSWORD}" | passwd deploy
 
@@ -92,24 +93,6 @@ function sshd_setup() {
   service ssh restart
 }
 
-mount_volume "${storage_device}" "/storage"
-floating_ip_attach "${floating_ip}"
-
-sshd_setup
-packages_update
-
-install_prerequisites
-
-ufw_setup
-
-mkdir -p /storage/www/ssl/default
-mkdir -p /storage/www/logs
-mkdir -p /storage/www/data/www
-
-deploy_user_setup
-
-mkdir -p /storage/www-new
-
 function www_systemd_config() {
   cat <<-EOF
 [Unit]
@@ -131,7 +114,7 @@ EOF
 function www_template() {
   cat <<EOF
 {
-    storage file_system /storage/www-new/data/
+    storage file_system /storage/www/data/
 }
 
 ${domain} {
@@ -141,7 +124,7 @@ ${domain} {
     level  INFO
   }
 
-	root * /storage/www/data/www
+	root * /storage/www/html
 	file_server
 }
 EOF
@@ -164,5 +147,23 @@ function caddy_install() {
   mv caddy /usr/local/bin/
 }
 
+mount_volume "${storage_device}" "/storage"
+floating_ip_attach "${floating_ip}"
+
+sshd_setup
+packages_update
+
+install_prerequisites
+
+ufw_setup
+
+mkdir -p /storage/www/logs
+mkdir -p /storage/www/data
+mkdir -p /storage/www/html
+
+deploy_user_setup
+
 caddy_install
 www_setup
+
+system_update

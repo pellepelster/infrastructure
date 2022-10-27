@@ -42,7 +42,7 @@ provider "hetznerdns" {
 
 resource "hcloud_server" "www" {
   name        = "www"
-  image       = "debian-10"
+  image       = "debian-11"
   server_type = "cx11"
   location    = var.location
   user_data   = data.template_file.user_data.rendered
