@@ -58,9 +58,7 @@ function terraform_wrapper_do() {
   shift || true
   shift || true
 
-  if [ ! -d "${directory}/.terraform" ]; then
-    terraform_wrapper "${directory}" init -lock=false
-  fi
+  terraform_wrapper "${directory}" init -upgrade -lock=false
 
   terraform_wrapper "${directory}" "${command}" -lock=false "$@"
 }

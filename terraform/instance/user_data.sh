@@ -117,7 +117,7 @@ function www_template() {
     storage file_system /storage/www/data/
 }
 
-${domain} {
+pelle.io, pellepelster.de {
   log {
     output stdout
     format console
@@ -126,6 +126,16 @@ ${domain} {
 
 	root * /storage/www/html
 	file_server
+}
+
+blcks.de, solidblocks.de {
+  log {
+    output stdout
+    format console
+    level  INFO
+  }
+
+  redir https://pellepelster.github.io/solidblocks/
 }
 EOF
 }
