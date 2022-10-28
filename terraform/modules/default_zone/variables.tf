@@ -1,3 +1,3 @@
-variable "zone_id" {}
+variable "domain" {}
 
 variable "ip_address" {}

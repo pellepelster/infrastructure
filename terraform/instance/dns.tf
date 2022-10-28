@@ -1,49 +1,41 @@
-data "hetznerdns_zone" "dns_zone" {
-  name = var.domain
-}
-
 module "dns_pelle_io" {
   source     = "../modules/default_zone"
   ip_address = hcloud_floating_ip.www.ip_address
-  zone_id    = data.hetznerdns_zone.dns_zone.id
+  domain    = "pelle.io"
 }
 
 module "dns_sanne_li" {
   source     = "../modules/default_zone"
   ip_address = hcloud_floating_ip.www.ip_address
-  zone_id    = data.hetznerdns_zone.sanne_li_dns_zone.id
-}
-
-data "hetznerdns_zone" "sanne_li_dns_zone" {
-  name = "sanne.li"
+  domain = "sanne.li"
 }
 
 module "dns_pellepelster_de" {
   source     = "../modules/default_zone"
   ip_address = hcloud_floating_ip.www.ip_address
-  zone_id    = data.hetznerdns_zone.pellepelster_de_dns_zone.id
-}
-
-data "hetznerdns_zone" "pellepelster_de_dns_zone" {
-  name = "pellepelster.de"
+  domain = "pellepelster.de"
 }
 
 module "dns_blcks_de" {
   source     = "../modules/default_zone"
   ip_address = hcloud_floating_ip.www.ip_address
-  zone_id    = data.hetznerdns_zone.blcks_de_dns_zone.id
-}
-
-data "hetznerdns_zone" "blcks_de_dns_zone" {
-  name = "blcks.de"
+  domain = "blcks.de"
 }
 
 module "dns_solidblocks_de" {
   source     = "../modules/default_zone"
   ip_address = hcloud_floating_ip.www.ip_address
-  zone_id    = data.hetznerdns_zone.solidblocks_de_dns_zone.id
+  domain = "solidblocks.de"
 }
 
-data "hetznerdns_zone" "solidblocks_de_dns_zone" {
-  name = "solidblocks.de"
+module "dns_krawallbu_de" {
+  source     = "../modules/default_zone"
+  ip_address = hcloud_floating_ip.www.ip_address
+  domain = "krawallbu.de"
+}
+
+module "dns_krawallbude_de" {
+  source     = "../modules/default_zone"
+  ip_address = hcloud_floating_ip.www.ip_address
+  domain = "krawallbude.de"
 }
