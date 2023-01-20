@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -o pipefail -o errexit -o nounset
+
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)"
 
 DOMAIN="pelle.io"
@@ -10,33 +11,41 @@ trap task_clean SIGINT SIGTERM ERR EXIT
 TEMP_DIR="${DIR}/.tmp.$$"
 mkdir -p "${TEMP_DIR}"
 
-###############################################################################
-# bootstrapping
-###############################################################################
 function bootstrap_solidblocks() {
-  local dir="${1:-}"
+  local default_dir="$(cd "$(dirname "$0")" ; pwd -P)"
+  local install_dir="${1:-${default_dir}/.solidblocks-shell}"
 
-  SOLIDBLOCKS_SHELL_VERSION="v0.0.41"
-  SOLIDBLOCKS_SHELL_CHECKSUM="7c5cb9a80649a1eb9927ec96820f9d0c5d09afa3f25f6a0f8745b99dcbf931b7"
+  SOLIDBLOCKS_SHELL_VERSION="v0.0.68"
+  SOLIDBLOCKS_SHELL_CHECKSUM="1a7bb1d03b35e4cb94d825ec542d6f51c2c3cc1a3c387b0dea61eb4be32760a7"
 
-  if [[ ! -d "${dir}" ]]; then
-    curl -L "https://github.com/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_SHELL_VERSION}/solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip" >"solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip"
-    echo "${SOLIDBLOCKS_SHELL_CHECKSUM}  solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip" | sha256sum -c
-    unzip -o "solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip"
-    rm -f "solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip"
-  fi
+  local temp_file="$(mktemp)"
+
+  mkdir -p "${install_dir}"
+  curl -L "https://github.com/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_SHELL_VERSION}/solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip" > "${temp_file}"
+  echo "${SOLIDBLOCKS_SHELL_CHECKSUM}  ${temp_file}" | sha256sum -c
+  cd "${install_dir}"
+  unzip -o -j "${temp_file}" -d "${install_dir}"
+  rm -f "${temp_file}"
 }
 
 function ensure_environment() {
-  source "${DIR}/solidblocks-shell/log.sh"
-  source "${DIR}/solidblocks-shell/utils.sh"
-  source "${DIR}/solidblocks-shell/software.sh"
+
+  if [[ ! -d "${DIR}/.solidblocks-shell" ]]; then
+    echo "environment is not bootstrapped, please run ./do bootstrap first"
+    exit 1
+  fi
+
+  source "${DIR}/.solidblocks-shell/log.sh"
+  source "${DIR}/.solidblocks-shell/utils.sh"
+  source "${DIR}/.solidblocks-shell/pass.sh"
+  source "${DIR}/.solidblocks-shell/colors.sh"
+  source "${DIR}/.solidblocks-shell/software.sh"
 
   software_set_export_path
 }
 
 function task_bootstrap() {
-  bootstrap_solidblocks "${DIR}/solidblocks-shell"
+  bootstrap_solidblocks
   ensure_environment
   ensure_command "pass"
   ensure_command "docker"
@@ -88,6 +97,11 @@ function task_infra_storage {
   terraform_wrapper_do "terraform/storage" "$@"
 }
 
+function task_www_report {
+  task_ssh_instance "cat /storage/www/logs/*" | docker run --rm -i -e LANG=$LANG allinurl/goaccess -a -o html --log-format CADDY - > "${DIR}/report.html"
+  xdg-open "${DIR}/report.html"
+}
+
 function task_ssh_instance {
   local public_ip="$(terraform_wrapper "terraform/instance" "output" "-json" | jq -r '.public_ip.value')"
   ssh -o UserKnownHostsFile=${DIR}/ssh_known_hosts root@${public_ip} "$@"
@@ -125,8 +139,8 @@ ARG=${1:-}
 shift || true
 
 case "${ARG}" in
-bootstrap) ;;
-*) ensure_environment ;;
+  bootstrap) ;;
+  *) ensure_environment ;;
 esac
 
 case ${ARG} in
@@ -135,6 +149,8 @@ case ${ARG} in
   deploy-html) task_deploy_html "$@" ;;
 
   output) task_output "$@" ;;
+
+  www-report) task_www_report "$@" ;;
 
   infra-instance) task_infra_instance "$@" ;;
   infra-storage) task_infra_storage "$@" ;;

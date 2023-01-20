@@ -124,7 +124,7 @@ pelle.io, pellepelster.de, krawallbude.de, krawallbu.de {
       roll_keep_for 87600h
     }
 
-    format console
+    format json
     level  INFO
   }
 
@@ -141,7 +141,7 @@ solidblocks.de, blcks.de  {
       roll_keep_for 87600h
     }
 
-    format console
+    format json
     level  INFO
   }
 
