@@ -93,13 +93,17 @@ resource "hcloud_firewall_attachment" "www" {
   ]
 }
 
-/*
 resource "hcloud_rdns" "www_ipv4" {
   dns_ptr       = "pelle.io"
   primary_ip_id = hcloud_primary_ip.www_ipv4.id
-  ip_address    = hcloud_floating_ip.www.ip_address
+  ip_address    = hcloud_primary_ip.www_ipv4.ip_address
 }
-*/
+
+resource "hcloud_rdns" "www_ipv6" {
+  dns_ptr       = "pelle.io"
+  primary_ip_id = hcloud_primary_ip.www_ipv6.id
+  ip_address    = hcloud_primary_ip.www_ipv6.ip_address
+}
 
 resource "hcloud_ssh_key" "pelle" {
   name       = "pelle"

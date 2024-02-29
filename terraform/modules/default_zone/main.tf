@@ -10,6 +10,7 @@ resource "hetznerdns_record" "ipv4" {
   ttl     = 60
 }
 
+/*
 resource "hetznerdns_record" "ipv6" {
   zone_id = data.hetznerdns_zone.zone.id
   name    = "@"
@@ -17,6 +18,7 @@ resource "hetznerdns_record" "ipv6" {
   type    = "AAAA"
   ttl     = 60
 }
+*/
 
 resource "hetznerdns_record" "spf" {
   zone_id = data.hetznerdns_zone.zone.id
