@@ -6,27 +6,32 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)"
 
 DOMAIN="pelle.io"
 
-trap task_clean SIGINT SIGTERM ERR EXIT
+trap task_clean EXIT
 
 TEMP_DIR="${DIR}/.tmp.$$"
 mkdir -p "${TEMP_DIR}"
 
+SOLIDBLOCKS_SHELL_VERSION="v0.2.5"
+SOLIDBLOCKS_SHELL_CHECKSUM="d07eb3250f83ae545236fdd915feca602bdb9b683140f2db8782eab29c9b2c48"
+
+# self contained function for initial Solidblocks bootstrapping
 function bootstrap_solidblocks() {
   local default_dir="$(cd "$(dirname "$0")" ; pwd -P)"
   local install_dir="${1:-${default_dir}/.solidblocks-shell}"
 
-  SOLIDBLOCKS_SHELL_VERSION="v0.0.68"
-  SOLIDBLOCKS_SHELL_CHECKSUM="1a7bb1d03b35e4cb94d825ec542d6f51c2c3cc1a3c387b0dea61eb4be32760a7"
-
   local temp_file="$(mktemp)"
 
-  mkdir -p "${install_dir}"
-  curl -L "https://github.com/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_SHELL_VERSION}/solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip" > "${temp_file}"
+  curl -v -L "${SOLIDBLOCKS_BASE_URL:-https://github.com}/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_SHELL_VERSION}/solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip" > "${temp_file}"
   echo "${SOLIDBLOCKS_SHELL_CHECKSUM}  ${temp_file}" | sha256sum -c
-  cd "${install_dir}"
-  unzip -o -j "${temp_file}" -d "${install_dir}"
-  rm -f "${temp_file}"
+
+  mkdir -p "${install_dir}" || true
+  (
+      cd "${install_dir}"
+      unzip -o -j "${temp_file}" -d "${install_dir}"
+      rm -f "${temp_file}"
+  )
 }
+
 
 function ensure_environment() {
 
@@ -38,7 +43,7 @@ function ensure_environment() {
   source "${DIR}/.solidblocks-shell/log.sh"
   source "${DIR}/.solidblocks-shell/utils.sh"
   source "${DIR}/.solidblocks-shell/pass.sh"
-  source "${DIR}/.solidblocks-shell/colors.sh"
+  source "${DIR}/.solidblocks-shell/text.sh"
   source "${DIR}/.solidblocks-shell/software.sh"
 
   software_set_export_path
@@ -68,7 +73,6 @@ function terraform_wrapper_do() {
   shift || true
 
   terraform_wrapper "${directory}" init -upgrade -lock=false
-
   terraform_wrapper "${directory}" "${command}" -lock=false "$@"
 }
 
@@ -98,7 +102,12 @@ function task_infra_storage {
 }
 
 function task_www_report {
-  task_ssh_instance "cat /storage/www/logs/*" | docker run --rm -i -e LANG=$LANG allinurl/goaccess -a -o html --log-format CADDY - > "${DIR}/report.html"
+  local public_ip="$(terraform_wrapper "terraform/instance" "output" "-json" | jq -r '.public_ip.value')"
+  local reports_dir="${DIR}/reports"
+
+  mkdir -p "${reports_dir}"
+  scp -o UserKnownHostsFile=${DIR}/ssh_known_hosts -r "root@${public_ip}:/storage/www/logs/*" "${reports_dir}"
+  goaccess --agent-list --output html --log-format CADDY ${reports_dir}/* > "${DIR}/report.html"
   xdg-open "${DIR}/report.html"
 }
 
@@ -152,11 +161,13 @@ case ${ARG} in
 
   www-report) task_www_report "$@" ;;
 
-  infra-instance) task_infra_instance "$@" ;;
   infra-storage) task_infra_storage "$@" ;;
+  infra-instance) task_infra_instance "$@" ;;
 
   ssh-instance) task_ssh_instance "$@" ;;
+
   set-cloud-api-token) task_set_cloud_api_token ;;
   set-dns-api-token) task_set_dns_api_token ;;
+
   *) task_usage ;;
 esac

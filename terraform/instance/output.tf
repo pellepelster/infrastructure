@@ -3,6 +3,6 @@ output "public_ip" {
 }
 
 output "deploy_ssh_key" {
-  value = tls_private_key.deploy_key.private_key_openssh
+  value     = tls_private_key.deploy_key.private_key_openssh
   sensitive = true
 }

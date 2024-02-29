@@ -2,13 +2,13 @@ terraform {
   required_providers {
 
     hetznerdns = {
-      source = "timohirt/hetznerdns"
+      source  = "timohirt/hetznerdns"
       version = "2.2.0"
     }
 
     hcloud = {
       source  = "hetznercloud/hcloud"
-      version = "1.35.2"
+      version = "1.45.0"
     }
 
     template = {
@@ -16,7 +16,7 @@ terraform {
     }
 
     tls = {
-      source = "hashicorp/tls"
+      source  = "hashicorp/tls"
       version = "4.0.3"
     }
   }
@@ -37,7 +37,7 @@ provider "hetznerdns" {
 
 resource "hcloud_server" "www" {
   name        = "www"
-  image       = "debian-11"
+  image       = "debian-12"
   server_type = "cx11"
   location    = var.location
   user_data   = data.template_file.user_data.rendered

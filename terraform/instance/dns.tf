@@ -1,41 +1,41 @@
 module "dns_pelle_io" {
   source     = "../modules/default_zone"
   ip_address = hcloud_floating_ip.www.ip_address
-  domain    = "pelle.io"
+  domain     = "pelle.io"
 }
 
 module "dns_sanne_li" {
   source     = "../modules/default_zone"
   ip_address = hcloud_floating_ip.www.ip_address
-  domain = "sanne.li"
+  domain     = "sanne.li"
 }
 
 module "dns_pellepelster_de" {
   source     = "../modules/default_zone"
   ip_address = hcloud_floating_ip.www.ip_address
-  domain = "pellepelster.de"
+  domain     = "pellepelster.de"
 }
 
 module "dns_blcks_de" {
   source     = "../modules/default_zone"
   ip_address = hcloud_floating_ip.www.ip_address
-  domain = "blcks.de"
+  domain     = "blcks.de"
 }
 
 module "dns_solidblocks_de" {
   source     = "../modules/default_zone"
   ip_address = hcloud_floating_ip.www.ip_address
-  domain = "solidblocks.de"
+  domain     = "solidblocks.de"
 }
 
 module "dns_krawallbu_de" {
   source     = "../modules/default_zone"
   ip_address = hcloud_floating_ip.www.ip_address
-  domain = "krawallbu.de"
+  domain     = "krawallbu.de"
 }
 
 module "dns_krawallbude_de" {
   source     = "../modules/default_zone"
   ip_address = hcloud_floating_ip.www.ip_address
-  domain = "krawallbude.de"
+  domain     = "krawallbude.de"
 }

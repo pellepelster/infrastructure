@@ -2,8 +2,8 @@
 
 set -o pipefail -o errexit -o nounset
 
-CADDY_VERSION="2.5.2"
-CADDY_CHECKSUM="641908bbf6f13ee69f3c445a44012d0c3327462c00a1d47fb40f07ce5d00e31b"
+CADDY_VERSION="2.7.6"
+CADDY_CHECKSUM="99587cf77c595f0bf62cc23c9ea101f9879fa016c7b689d498ce054904821f22"
 
 ${user_data_lib}
 
@@ -122,6 +122,7 @@ pelle.io, pellepelster.de, krawallbude.de, krawallbu.de {
       roll_uncompressed
       roll_keep     10000
       roll_keep_for 87600h
+      roll_size     10MiB
     }
 
     format json
@@ -139,6 +140,7 @@ solidblocks.de, blcks.de  {
       roll_uncompressed
       roll_keep     10000
       roll_keep_for 87600h
+      roll_size     10MiB
     }
 
     format json

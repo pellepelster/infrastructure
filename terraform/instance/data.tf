@@ -4,7 +4,7 @@ data "template_file" "user_data" {
 
   vars = {
     storage_device = data.hcloud_volume.data.linux_device
-    floating_ip = hcloud_floating_ip.www.ip_address
+    floating_ip    = hcloud_floating_ip.www.ip_address
 
     domain   = var.domain
     hostname = var.hostname
