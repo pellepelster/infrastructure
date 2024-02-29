@@ -174,7 +174,6 @@ function caddy_install() {
 }
 
 mount_volume "${storage_device}" "/storage"
-floating_ip_attach "${floating_ip}"
 
 sshd_setup
 packages_update

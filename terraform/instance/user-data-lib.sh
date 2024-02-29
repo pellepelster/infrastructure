@@ -11,20 +11,3 @@ function mount_volume() {
     echo "mounting '${mount_point}'"
   done
 }
-
-
-function floating_ip_config() {
-  local floating_ip="${1:-}"
-  cat <<EOF
- auto eth0:1
- iface eth0:1 inet static
-     address ${floating_ip}
-     netmask 32
-EOF
-}
-
-function floating_ip_attach() {
-  local floating_ip="${1:-}"
-  floating_ip_config "${floating_ip}" > /etc/network/interfaces.d/60-floating-ip.cfg
-  service networking restart
-}

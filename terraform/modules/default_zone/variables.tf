@@ -1,3 +1,5 @@
 variable "domain" {}
 
-variable "ip_address" {}
+variable "ipv4_address" {}
+
+variable "ipv6_address" {}

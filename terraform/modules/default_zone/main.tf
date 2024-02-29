@@ -1,23 +1,20 @@
-terraform {
-  required_providers {
-    hetznerdns = {
-      source  = "timohirt/hetznerdns"
-      version = "2.2.0"
-    }
-  }
-
-  required_version = ">= 0.13"
-}
-
 data "hetznerdns_zone" "zone" {
   name = var.domain
 }
 
-resource "hetznerdns_record" "root" {
+resource "hetznerdns_record" "ipv4" {
   zone_id = data.hetznerdns_zone.zone.id
   name    = "@"
-  value   = var.ip_address
+  value   = var.ipv4_address
   type    = "A"
+  ttl     = 60
+}
+
+resource "hetznerdns_record" "ipv6" {
+  zone_id = data.hetznerdns_zone.zone.id
+  name    = "@"
+  value   = var.ipv6_address
+  type    = "AAAA"
   ttl     = 60
 }
 
