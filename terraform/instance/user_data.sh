@@ -56,7 +56,6 @@ PrintMotd no
 AcceptEnv LANG LC_*
 
 Subsystem	sftp	/usr/lib/openssh/sftp-server
-
 AuthorizedKeysFile /etc/ssh/authorized_keys/%u .ssh/authorized_keys
 
 Match User deploy
@@ -79,6 +78,10 @@ function deploy_user_setup() {
 
   echo "${deploy_public_key}" | base64 -d > /etc/ssh/authorized_keys/deploy
   chmod 644 /etc/ssh/authorized_keys/deploy
+
+  mkdir -p /storage/www/html/public_html
+  chown deploy:deploy /storage/www/html/public_html
+  chmod 755 /storage/www/html/public_html
 }
 
 function sshd_setup() {
@@ -129,7 +132,7 @@ pelle.io, pellepelster.de, krawallbude.de, krawallbu.de {
     level  INFO
   }
 
-	root * /storage/www/html
+	root * /storage/www/html/public_html/pelle.io
 	file_server
 }
 

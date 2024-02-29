@@ -102,18 +102,18 @@ function task_infra_storage {
 }
 
 function task_www_report {
-  local public_ip="$(terraform_wrapper "terraform/instance" "output" "-json" | jq -r '.public_ip.value')"
+  local public_ipv4="$(terraform_wrapper "terraform/instance" "output" "-json" | jq -r '.public_ipv4.value')"
   local reports_dir="${DIR}/reports"
 
   mkdir -p "${reports_dir}"
-  scp -o UserKnownHostsFile=${DIR}/ssh_known_hosts -r "root@${public_ip}:/storage/www/logs/*" "${reports_dir}"
+  scp -o UserKnownHostsFile=${DIR}/ssh_known_hosts -r "root@${public_ipv4}:/storage/www/logs/*" "${reports_dir}"
   goaccess --agent-list --output html --log-format CADDY ${reports_dir}/* > "${DIR}/report.html"
   xdg-open "${DIR}/report.html"
 }
 
 function task_ssh_instance {
-  local public_ip="$(terraform_wrapper "terraform/instance" "output" "-json" | jq -r '.public_ip.value')"
-  ssh -o UserKnownHostsFile=${DIR}/ssh_known_hosts root@${public_ip} "$@"
+  local public_ipv4="$(terraform_wrapper "terraform/instance" "output" "-json" | jq -r '.public_ipv4.value')"
+  ssh -o UserKnownHostsFile=${DIR}/ssh_known_hosts root@${public_ipv4} "$@"
 }
 
 function task_output {

@@ -1,4 +1,4 @@
-output "public_ip" {
+output "public_ipv4" {
   value = hcloud_server.www.ipv4_address
 }
 
