@@ -150,7 +150,8 @@ solidblocks.de, blcks.de  {
     level  INFO
   }
 
-  redir https://pellepelster.github.io/solidblocks/
+	root * /storage/www/html/public_html/solidblocks.de
+	file_server
 }
 EOF
 }
