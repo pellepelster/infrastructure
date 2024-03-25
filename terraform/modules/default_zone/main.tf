@@ -19,11 +19,10 @@ resource "hetznerdns_record" "ipv6" {
   ttl     = 60
 }
 */
-
 resource "hetznerdns_record" "spf" {
   zone_id = data.hetznerdns_zone.zone.id
   name    = "@"
-  value   = "v=spf1 include:mailbox.org"
+  value   = "\"v=spf1 include:mailbox.org\""
   type    = "TXT"
   ttl     = 60
 }
@@ -73,5 +72,23 @@ resource "hetznerdns_record" "ns_oxygen" {
   name    = "@"
   value   = "oxygen.ns.hetzner.com."
   type    = "NS"
+  ttl     = 60
+}
+
+resource "hetznerdns_record" "xmpp_client" {
+  count   = var.enable_xmpp ? 1 : 0
+  zone_id = data.hetznerdns_zone.zone.id
+  name    = "_xmpp-client._tcp"
+  value   = "0 5 5222 xmpp.mailbox.org."
+  type    = "SRV"
+  ttl     = 60
+}
+
+resource "hetznerdns_record" "xmpp_server" {
+  count   = var.enable_xmpp ? 1 : 0
+  zone_id = data.hetznerdns_zone.zone.id
+  name    = "_xmpp-server._tcp"
+  value   = "0 5 5269 xmpp.mailbox.org."
+  type    = "SRV"
   ttl     = 60
 }

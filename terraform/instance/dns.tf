@@ -4,6 +4,7 @@ module "dns_pelle_io" {
   ipv6_address = hcloud_server.www.ipv6_address
   domain       = "pelle.io"
   depends_on   = [hcloud_server.www]
+  enable_xmpp  = true
 }
 
 module "dns_sanne_li" {
@@ -36,6 +37,7 @@ module "dns_solidblocks_de" {
   ipv6_address = hcloud_server.www.ipv6_address
   domain       = "solidblocks.de"
   depends_on   = [hcloud_server.www]
+  enable_xmpp  = true
 }
 
 module "dns_krawallbu_de" {
