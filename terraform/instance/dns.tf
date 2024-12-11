@@ -23,14 +23,6 @@ module "dns_pellepelster_de" {
   depends_on   = [hcloud_server.www]
 }
 
-module "dns_blcks_de" {
-  source       = "../modules/default_zone"
-  ipv4_address = hcloud_server.www.ipv4_address
-  ipv6_address = hcloud_server.www.ipv6_address
-  domain       = "blcks.de"
-  depends_on   = [hcloud_server.www]
-}
-
 module "dns_solidblocks_de" {
   source       = "../modules/default_zone"
   ipv4_address = hcloud_server.www.ipv4_address

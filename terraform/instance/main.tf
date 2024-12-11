@@ -25,7 +25,7 @@ resource "hcloud_primary_ip" "www_ipv6" {
 resource "hcloud_server" "www" {
   name        = "www"
   image       = "debian-12"
-  server_type = "cx11"
+  server_type = "cx22"
   location    = var.location
   user_data   = data.template_file.user_data.rendered
 
