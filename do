@@ -112,8 +112,12 @@ function task_www_report {
 }
 
 function task_ssh_instance {
+  ssh -o UserKnownHostsFile=${DIR}/ssh_known_hosts root@pelle.io "$@"
+}
+
+function task_scp_instance {
   local public_ipv4="$(terraform_wrapper "terraform/instance" "output" "-json" | jq -r '.public_ipv4.value')"
-  ssh -o UserKnownHostsFile=${DIR}/ssh_known_hosts root@${public_ipv4} "$@"
+  scp -o UserKnownHostsFile=${DIR}/ssh_known_hosts root@${public_ipv4} "$@"
 }
 
 function task_output {
@@ -165,6 +169,7 @@ case ${ARG} in
   infra-instance) task_infra_instance "$@" ;;
 
   ssh-instance) task_ssh_instance "$@" ;;
+  scp-instance) task_scp_instance "$@" ;;
 
   set-cloud-api-token) task_set_cloud_api_token ;;
   set-dns-api-token) task_set_dns_api_token ;;

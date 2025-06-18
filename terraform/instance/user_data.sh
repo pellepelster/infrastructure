@@ -136,6 +136,23 @@ pelle.io, pellepelster.de, krawallbude.de, krawallbu.de {
 	file_server
 }
 
+sanne.li {
+  log {
+    output file /storage/www/logs/sanne.li {
+      roll_uncompressed
+      roll_keep     10000
+      roll_keep_for 87600h
+      roll_size     10MiB
+    }
+
+    format json
+    level  INFO
+  }
+
+	root * /storage/www/html/public_html/sanne.li
+	file_server
+}
+
 solidblocks.de, blcks.de  {
 
   log {
