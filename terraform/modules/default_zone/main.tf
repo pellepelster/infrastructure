@@ -1,94 +1,45 @@
-data "hetznerdns_zone" "zone" {
-  name = var.domain
+resource "hcloud_zone_rrset" "root_zone_ipv4" {
+  count = var.ipv4_address == null ? 0 : 1
+  zone  = var.zone
+  name  = "@"
+  type  = "A"
+  ttl   = 60
+
+  records = [
+    { value = var.ipv4_address },
+  ]
 }
 
-resource "hetznerdns_record" "ipv4" {
-  zone_id = data.hetznerdns_zone.zone.id
-  name    = "@"
-  value   = var.ipv4_address
-  type    = "A"
-  ttl     = 60
+resource "hcloud_zone_rrset" "root_zone_ipv6" {
+  count = var.ipv6_address == null ? 0 : 1
+  zone  = var.zone
+  name  = "@"
+  type  = "AAAA"
+  ttl   = 60
+
+  records = [
+    { value = var.ipv6_address },
+  ]
 }
 
-/*
-resource "hetznerdns_record" "ipv6" {
-  zone_id = data.hetznerdns_zone.zone.id
-  name    = "@"
-  value   = var.ipv6_address
-  type    = "AAAA"
-  ttl     = 60
-}
-*/
-resource "hetznerdns_record" "spf" {
-  zone_id = data.hetznerdns_zone.zone.id
-  name    = "@"
-  value   = "\"v=spf1 include:mailbox.org\""
-  type    = "TXT"
-  ttl     = 60
+resource "hcloud_zone_rrset" "spf" {
+  zone = var.zone
+  name = "@"
+  type = "TXT"
+  ttl  = 60
+  records = [
+    { value = "\"v=spf1 include:mailbox.org\"" },
+  ]
 }
 
-resource "hetznerdns_record" "mx_10" {
-  zone_id = data.hetznerdns_zone.zone.id
-  name    = "@"
-  value   = "10 mxext1.mailbox.org."
-  type    = "MX"
-  ttl     = 60
-}
-
-resource "hetznerdns_record" "mx_20" {
-  zone_id = data.hetznerdns_zone.zone.id
-  name    = "@"
-  value   = "20 mxext2.mailbox.org."
-  type    = "MX"
-  ttl     = 60
-}
-
-resource "hetznerdns_record" "mx_30" {
-  zone_id = data.hetznerdns_zone.zone.id
-  name    = "@"
-  value   = "30 mxext3.mailbox.org."
-  type    = "MX"
-  ttl     = 60
-}
-
-resource "hetznerdns_record" "ns_helium" {
-  zone_id = data.hetznerdns_zone.zone.id
-  name    = "@"
-  value   = "helium.ns.hetzner.de."
-  type    = "NS"
-  ttl     = 60
-}
-
-resource "hetznerdns_record" "ns_hydrogen" {
-  zone_id = data.hetznerdns_zone.zone.id
-  name    = "@"
-  value   = "hydrogen.ns.hetzner.com."
-  type    = "NS"
-  ttl     = 60
-}
-
-resource "hetznerdns_record" "ns_oxygen" {
-  zone_id = data.hetznerdns_zone.zone.id
-  name    = "@"
-  value   = "oxygen.ns.hetzner.com."
-  type    = "NS"
-  ttl     = 60
-}
-
-resource "hetznerdns_record" "xmpp_client" {
-  count   = var.enable_xmpp ? 1 : 0
-  zone_id = data.hetznerdns_zone.zone.id
-  name    = "_xmpp-client._tcp"
-  value   = "0 5 5222 xmpp.mailbox.org."
-  type    = "SRV"
-  ttl     = 60
-}
-
-resource "hetznerdns_record" "xmpp_server" {
-  count   = var.enable_xmpp ? 1 : 0
-  zone_id = data.hetznerdns_zone.zone.id
-  name    = "_xmpp-server._tcp"
-  value   = "0 5 5269 xmpp.mailbox.org."
-  type    = "SRV"
-  ttl     = 60
+resource "hcloud_zone_rrset" "mx" {
+  zone = var.zone
+  name = "@"
+  type = "MX"
+  ttl  = 60
+  records = [
+    { value = "10 mxext1.mailbox.org." },
+    { value = "10 mxext2.mailbox.org." },
+    { value = "30 mxext3.mailbox.org." },
+  ]
 }

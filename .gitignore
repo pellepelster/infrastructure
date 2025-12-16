@@ -8,4 +8,6 @@ solidblocks-shell
 solidblocks-shell-*.zip
 .solidblocks-shell/
 reports/
+www
+contrib
 

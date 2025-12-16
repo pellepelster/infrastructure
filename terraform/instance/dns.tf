@@ -2,7 +2,7 @@ module "dns_pelle_io" {
   source       = "../modules/default_zone"
   ipv4_address = hcloud_server.www.ipv4_address
   ipv6_address = hcloud_server.www.ipv6_address
-  domain       = "pelle.io"
+  zone       = "pelle.io"
   depends_on   = [hcloud_server.www]
   enable_xmpp  = true
 }
@@ -11,7 +11,7 @@ module "dns_sanne_li" {
   source       = "../modules/default_zone"
   ipv4_address = hcloud_server.www.ipv4_address
   ipv6_address = hcloud_server.www.ipv6_address
-  domain       = "sanne.li"
+  zone       = "sanne.li"
   depends_on   = [hcloud_server.www]
 }
 
@@ -19,7 +19,7 @@ module "dns_pellepelster_de" {
   source       = "../modules/default_zone"
   ipv4_address = hcloud_server.www.ipv4_address
   ipv6_address = hcloud_server.www.ipv6_address
-  domain       = "pellepelster.de"
+  zone       = "pellepelster.de"
   depends_on   = [hcloud_server.www]
 }
 
@@ -27,7 +27,7 @@ module "dns_solidblocks_de" {
   source       = "../modules/default_zone"
   ipv4_address = hcloud_server.www.ipv4_address
   ipv6_address = hcloud_server.www.ipv6_address
-  domain       = "solidblocks.de"
+  zone       = "solidblocks.de"
   depends_on   = [hcloud_server.www]
   enable_xmpp  = true
 }
@@ -36,7 +36,7 @@ module "dns_krawallbu_de" {
   source       = "../modules/default_zone"
   ipv4_address = hcloud_server.www.ipv4_address
   ipv6_address = hcloud_server.www.ipv6_address
-  domain       = "krawallbu.de"
+  zone       = "krawallbu.de"
   depends_on   = [hcloud_server.www]
 }
 
@@ -44,6 +44,6 @@ module "dns_krawallbude_de" {
   source       = "../modules/default_zone"
   ipv4_address = hcloud_server.www.ipv4_address
   ipv6_address = hcloud_server.www.ipv6_address
-  domain       = "krawallbude.de"
+  zone       = "krawallbude.de"
   depends_on   = [hcloud_server.www]
 }
