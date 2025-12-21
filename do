@@ -74,6 +74,7 @@ function terraform_wrapper_do() {
 
 function terraform_wrapper() {
   export HCLOUD_TOKEN="$(pass "infrastructure/pelle.io/cloud_api_token")"
+  export GITHUB_TOKEN="$(pass "github/pellepelster/pat/admin")"
   local directory=${1:-}
   shift || true
   (
@@ -118,7 +119,7 @@ function task_www_deploy {
     exit 1
   fi
 
-  s3cmd_wrapper "pelle.io" "${bucket}" sync --no-mime-magic --guess-mime-type --skip-existing ${DIR}/www/${bucket}/* s3://${bucket}
+  s3cmd_wrapper "pelle.io" "${bucket}" sync --no-mime-magic --guess-mime-type ${DIR}/www/${bucket}/* s3://${bucket}
 }
 
 
@@ -157,18 +158,6 @@ function task_deploy_html {
   sftp -i "${TEMP_DIR}/deploy_ssh" deploy@pelle.io
 }
 
-function task_set_cloud_api_token {
-  echo "Enter the Hetzner Cloud API token, followed by [ENTER]:"
-  read -r hetzner_cloud_api_token
-  echo ${hetzner_cloud_api_token} | pass insert -m "infrastructure/${DOMAIN}/cloud_api_token"
-}
-
-function task_set_dns_api_token {
-  echo "Enter the Hetzner DNS API token, followed by [ENTER]:"
-  read -r hetzner_dns_api_token
-  echo ${hetzner_dns_api_token} | pass insert -m "infrastructure/${DOMAIN}/dns_api_token"
-}
-
 ARG=${1:-}
 shift || true
 
@@ -190,12 +179,7 @@ case ${ARG} in
   infra-storage) task_infra_storage "$@" ;;
   infra-instance) task_infra_instance "$@" ;;
 
-
   ssh-instance) task_ssh_instance "$@" ;;
-  scp-instance) task_scp_instance "$@" ;;
-
-  set-cloud-api-token) task_set_cloud_api_token ;;
-  set-dns-api-token) task_set_dns_api_token ;;
 
   *) task_usage ;;
 esac

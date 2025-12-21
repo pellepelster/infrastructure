@@ -9,7 +9,7 @@ resource "hcloud_ssh_key" "pelle" {
 }
 
 module "www_pelle_io" {
-  source   = "/home/pelle/git/solidblocks/solidblocks-hetzner-web-s3-docker/modules/web-s3-docker"
+  source   = "https://github.com/pellepelster/solidblocks/releases/download/v0.4.8/terraform-hcloud-blcks-web-s3-docker-v0.4.8.zip"
   name     = "public"
   dns_zone = "pelle.io"
 

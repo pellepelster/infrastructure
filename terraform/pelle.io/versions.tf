@@ -13,6 +13,12 @@ terraform {
       source  = "hashicorp/tls"
       version = "4.0.3"
     }
+
+    github = {
+      source  = "integrations/github"
+      version = "6.9.0"
+    }
+
   }
 
   required_version = ">= 0.13"
@@ -21,3 +27,5 @@ terraform {
 provider "hcloud" {
 }
 
+provider "github" {
+}
