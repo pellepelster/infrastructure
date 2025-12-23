@@ -8,8 +8,13 @@ resource "hcloud_ssh_key" "pelle" {
   public_key = file("~/.ssh/id_rsa.pub")
 }
 
+resource "tls_private_key" "ssh_identity" {
+  algorithm = "ED25519"
+}
+
 module "www_pelle_io" {
-  source   = "https://github.com/pellepelster/solidblocks/releases/download/v0.4.8/terraform-hcloud-blcks-web-s3-docker-v0.4.8.zip"
+  //source   = "https://github.com/pellepelster/solidblocks/releases/download/v0.4.8/terraform-hcloud-blcks-web-s3-docker-v0.4.8.zip"
+  source   = "/home/pelle/git/solidblocks/solidblocks-web-s3-docker-hetzner/modules/web-s3-docker"
   name     = "public"
   dns_zone = "pelle.io"
 
@@ -25,6 +30,9 @@ module "www_pelle_io" {
       web_access_domains       = ["solidblocks.de"]
     },
   ]
+
+  ssh_host_key_ed25519  = tls_private_key.ssh_identity.private_key_openssh
+  ssh_host_cert_ed25519 = tls_private_key.ssh_identity.public_key_openssh
 }
 
 data "hcloud_server" "public" {

@@ -122,17 +122,6 @@ function task_www_deploy {
   s3cmd_wrapper "pelle.io" "${bucket}" sync --no-mime-magic --guess-mime-type ${DIR}/www/${bucket}/* s3://${bucket}
 }
 
-
-function task_www_report {
-  local public_ipv4="$(terraform_wrapper "terraform/instance" "output" "-json" | jq -r '.public_ipv4.value')"
-  local reports_dir="${DIR}/reports"
-
-  mkdir -p "${reports_dir}"
-  scp -o UserKnownHostsFile=${DIR}/ssh_known_hosts -r "root@${public_ipv4}:/storage/www/logs/*" "${reports_dir}"
-  goaccess --agent-list --output html --log-format CADDY ${reports_dir}/* > "${DIR}/report.html"
-  xdg-open "${DIR}/report.html"
-}
-
 function task_ssh_instance {
   ssh -o UserKnownHostsFile=${DIR}/ssh_known_hosts root@pelle.io "$@"
 }
@@ -140,22 +129,6 @@ function task_ssh_instance {
 function task_scp_instance {
   local public_ipv4="$(terraform_wrapper "terraform/instance" "output" "-json" | jq -r '.public_ipv4.value')"
   scp -o UserKnownHostsFile=${DIR}/ssh_known_hosts root@${public_ipv4} "$@"
-}
-
-function task_output {
-  terraform_wrapper "terraform/instance" "output" "-json" | jq "$@"
-}
-
-function task_deploy_html {
-  local dir=${1:-}
-
-  pass "infrastructure/${DOMAIN}/deploy_ssh_key" > "${TEMP_DIR}/deploy_ssh"
-  chmod 600 "${TEMP_DIR}/deploy_ssh"
-
-  echo "put -R ${dir}/*" > "${TEMP_DIR}/deploy_batch"
-  echo "exit" >> "${TEMP_DIR}/deploy_batch"
-  #sftp -b "${TEMP_DIR}/deploy_batch" -i "${TEMP_DIR}/deploy_ssh" deploy@pelle.io
-  sftp -i "${TEMP_DIR}/deploy_ssh" deploy@pelle.io
 }
 
 ARG=${1:-}
@@ -171,13 +144,6 @@ case ${ARG} in
 
   terraform) task_terraform "$@" ;;
   www-deploy) task_www_deploy "$@";;
-
-  #output) task_output "$@" ;;
-  #deploy-html) task_deploy_html "$@" ;;
-  #www-report) task_www_report "$@" ;;
-
-  infra-storage) task_infra_storage "$@" ;;
-  infra-instance) task_infra_instance "$@" ;;
 
   ssh-instance) task_ssh_instance "$@" ;;
 
