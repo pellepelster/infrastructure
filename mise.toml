@@ -1,0 +1,21 @@
+[settings]
+env_shell_expand = true
+
+[env]
+HCLOUD_TOKEN = "{{ get_env(name='HCLOUD_TOKEN', default=exec(command='pass infrastructure/pelle.io/cloud_api_token')) }}"
+GITHUB_TOKEN = "{{ get_env(name='HCLOUD_TOKEN', default=exec(command='pass github/pellepelster/pat/admin')) }}"
+
+[tools]
+terraform="1.14.5"
+
+[tasks.apply]
+run = "blcks cloud apply pelle.yml"
+
+[tasks.plan]
+run = "blcks cloud plan pelle.yml"
+
+[tasks.help]
+run = "blcks cloud help pelle.yml"
+
+[tasks.help1]
+run = "blcks cloud help"

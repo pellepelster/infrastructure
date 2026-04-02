@@ -1,0 +1,32 @@
+---
+name: pelle
+root_domain: pelle.io
+
+providers:
+  - type: pass
+  - type: ssh_key
+    private_key: ~/.ssh/pelle.io.ed25519.key
+  - type: hcloud
+
+services:
+  - type: s3
+    name: public
+    buckets:
+      - name: pelle.io
+        public_access: true
+        public_access_domains:
+            - pelle.io
+        access_keys:
+          - name: "admin"
+            owner: true
+            read: true
+            write: true
+      - name: solidblocks.de
+        public_access: true
+        public_access_domains:
+            - solidblocks.de
+        access_keys:
+          - name: "admin"
+            owner: true
+            read: true
+            write: true
