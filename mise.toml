@@ -17,5 +17,5 @@ run = "blcks cloud plan pelle.yml"
 [tasks.help]
 run = "blcks cloud help pelle.yml"
 
-[tasks.help1]
-run = "blcks cloud help"
+[tasks.info]
+run = "blcks cloud info pelle.yml"

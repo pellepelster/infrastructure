@@ -7,6 +7,7 @@ providers:
   - type: ssh_key
     private_key: ~/.ssh/pelle.io.ed25519.key
   - type: hcloud
+  - type: backup_local
 
 services:
   - type: s3
