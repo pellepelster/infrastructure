@@ -8,6 +8,8 @@ providers:
     private_key: ~/.ssh/pelle.io.ed25519.key
   - type: hcloud
   - type: backup_local
+  - type: github
+    github_url: https://github.com/pellepelster/solidblocks
 
 services:
   - type: s3
@@ -31,3 +33,14 @@ services:
             owner: true
             read: true
             write: true
+  - type: github_runner
+    name: blcks-runner
+    allow_sudo: true
+    scale: 3
+    packages:
+      - python3-venv
+      - zip
+      - unzip
+    labels:
+      - self-hosted
+      - ubuntu-24.04
