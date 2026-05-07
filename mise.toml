@@ -19,3 +19,9 @@ run = "blcks cloud help pelle.yaml"
 
 [tasks.info]
 run = "blcks cloud info pelle.yaml"
+
+[tasks.maintenance]
+run = "blcks cloud maintenance pelle.yaml"
+
+[tasks.status]
+run = "blcks cloud status pelle.yaml"
