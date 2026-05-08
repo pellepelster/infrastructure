@@ -6,22 +6,34 @@ HCLOUD_TOKEN = "{{ get_env(name='HCLOUD_TOKEN', default=exec(command='pass infra
 GITHUB_TOKEN = "{{ get_env(name='GITHUB_TOKEN', default=exec(command='pass github/pellepelster/pat/admin')) }}"
 
 [tools]
-terraform="1.14.5"
+terraform="1.15.2"
 
-[tasks.apply]
+[tasks."cloud:apply"]
 run = "blcks cloud apply pelle.yaml"
 
-[tasks.plan]
+[tasks."cloud:plan"]
 run = "blcks cloud plan pelle.yaml"
 
-[tasks.help]
-run = "blcks cloud help pelle.yaml"
+[tasks."tf:plan"]
+dir = "terraform/pelle.io"
+run = "terraform plan"
 
-[tasks.info]
-run = "blcks cloud info pelle.yaml"
+[tasks."tf:apply"]
+dir = "terraform/pelle.io"
+run = "terraform apply"
 
-[tasks.maintenance]
-run = "blcks cloud maintenance pelle.yaml"
+[tasks."tf:init"]
+dir = "terraform/pelle.io"
+run = "terraform init -upgrade"
 
-[tasks.status]
-run = "blcks cloud status pelle.yaml"
+[tasks."dev:status"]
+dir = "~/git/solidblocks"
+run = "./gradlew clean :solidblocks-cli:run --args=\"cloud status ${HOME}/git/infrastructure/pelle.yaml\""
+
+[tasks."dev:maintenance"]
+dir = "~/git/solidblocks"
+run = "./gradlew clean :solidblocks-cli:run --args=\"cloud maintenance ${HOME}/git/infrastructure/pelle.yaml\""
+
+[tasks."dev:apply"]
+dir = "~/git/solidblocks"
+run = "./gradlew clean :solidblocks-cli:run --args=\"cloud apply ${HOME}/git/infrastructure/pelle.yaml\""

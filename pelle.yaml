@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://solidblocks.de/blcks-cloud.schema.json
 ---
 name: pelle
 root_domain: pelle.io
@@ -36,7 +37,7 @@ services:
   - type: github_runner
     name: blcks-runner
     allow_sudo: true
-    scale: 3
+    scale: 1
     packages:
       - python3-venv
       - zip

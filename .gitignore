@@ -4,10 +4,7 @@ terraform.tfstate.backup
 .terraform.lock.hcl
 .bundle/
 .vendor/
-solidblocks-shell
-solidblocks-shell-*.zip
-.solidblocks-shell/
 reports/
-www
-contrib
-
+blcks.log
+pelle_default_known_hosts
+pelle_default_ssh_config
