@@ -4,6 +4,9 @@ env_shell_expand = true
 [env]
 HCLOUD_TOKEN = "{{ get_env(name='HCLOUD_TOKEN', default=exec(command='pass infrastructure/pelle.io/cloud_api_token')) }}"
 GITHUB_TOKEN = "{{ get_env(name='GITHUB_TOKEN', default=exec(command='pass github/pellepelster/pat/admin')) }}"
+SCW_ACCESS_KEY = "{{ get_env(name='GITHUB_TOKEN', default=exec(command='pass scaleway/solidblocks.de/terraform/access_key_id')) }}"
+SCW_SECRET_KEY = "{{ get_env(name='GITHUB_TOKEN', default=exec(command='pass scaleway/solidblocks.de/terraform/secret_key')) }}"
+SCW_DEFAULT_ORGANIZATION_ID = "{{ get_env(name='GITHUB_TOKEN', default=exec(command='pass scaleway/solidblocks.de/organization_id')) }}"
 
 [tools]
 terraform="1.15.2"
@@ -14,16 +17,34 @@ run = "blcks cloud apply pelle.yaml"
 [tasks."cloud:plan"]
 run = "blcks cloud plan pelle.yaml"
 
-[tasks."tf:plan"]
+[tasks."pelle.io:tf:plan"]
 dir = "terraform/pelle.io"
 run = "terraform plan"
 
-[tasks."tf:apply"]
+[tasks."pelle.io:tf:apply"]
 dir = "terraform/pelle.io"
 run = "terraform apply"
 
-[tasks."tf:init"]
+[tasks."pelle.io:tf:init"]
 dir = "terraform/pelle.io"
+run = "terraform init -upgrade"
+
+[tasks."solidblocks.de:tf:plan"]
+dir = "terraform/solidblocks.de"
+run = "terraform plan"
+
+[tasks."solidblocks.de:tf:apply"]
+dir = "terraform/solidblocks.de"
+run = """
+terraform apply
+echo "$(terraform output -raw smtp_host)" | pass insert --multiline --force solidblocks/scaleway/tem/smtp_host
+echo "$(terraform output -raw smtp_port)" | pass insert --multiline --force solidblocks/scaleway/tem/smtp_port
+echo "$(terraform output -raw smtp_user)" | pass insert --multiline --force solidblocks/scaleway/tem/smtp_user
+echo "$(terraform output -raw smtp_password)" | pass insert --multiline --force solidblocks/scaleway/tem/smtp_password
+"""
+
+[tasks."solidblocks.de:tf:init"]
+dir = "terraform/solidblocks.de"
 run = "terraform init -upgrade"
 
 [tasks."dev:status"]
@@ -36,4 +57,9 @@ run = "./gradlew clean :solidblocks-cli:run --args=\"cloud maintenance ${HOME}/g
 
 [tasks."dev:apply"]
 dir = "~/git/solidblocks"
-run = "./gradlew clean :solidblocks-cli:run --args=\"cloud apply ${HOME}/git/infrastructure/pelle.yaml\""
+run = "./gradlew clean :solidblocks-cli:run --args=\"cloud apply --taint-secrets ${HOME}/git/infrastructure/pelle.yaml\""
+
+[tasks."dev:plan"]
+dir = "~/git/solidblocks"
+run = "./gradlew clean :solidblocks-cli:run --args=\"cloud plan ${HOME}/git/infrastructure/pelle.yaml\""
+

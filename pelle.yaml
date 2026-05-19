@@ -32,3 +32,16 @@ services:
             owner: true
             read: true
             write: true
+  - type: docker
+    name: solidblocks-contact
+    image: ghcr.io/pellepelster/solidblocks-contact:latest
+    use_floating_ip: true
+    environment_vars:
+      SMTP_HOST: "${pass:solidblocks/scaleway/tem/smtp_host}"
+      SMTP_PORT: "${pass:solidblocks/scaleway/tem/smtp_port}"
+      SMTP_USERNAME: "${pass:solidblocks/scaleway/tem/smtp_user}"
+      SMTP_PASSWORD: "${pass:solidblocks/scaleway/tem/smtp_password}"
+      SMTP_RECIPIENT: pelle@pelle.io
+      SMTP_FROM: info@tem.solidblocks.de
+    endpoints:
+      - container_port: 8080

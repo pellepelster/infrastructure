@@ -2,7 +2,7 @@ terraform {
   required_providers {
     hcloud = {
       source  = "hetznercloud/hcloud"
-      version = "1.57.0"
+      version = "1.63.0"
     }
 
     template = {
@@ -19,6 +19,9 @@ terraform {
       version = "6.9.0"
     }
 
+    scaleway = {
+      source = "scaleway/scaleway"
+    }
   }
 
   required_version = ">= 0.13"
@@ -29,3 +32,5 @@ provider "hcloud" {
 
 provider "github" {
 }
+
+provider "scaleway" {}
