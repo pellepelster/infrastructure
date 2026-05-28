@@ -34,7 +34,7 @@ services:
             write: true
   - type: docker
     name: solidblocks-contact
-    image: ghcr.io/pellepelster/solidblocks-contact:latest
+    image: ghcr.io/pellepelster/solidblocks-contact:fceb202f63539f30d2b930de627ea147fbdadf1b
     use_floating_ip: true
     environment_vars:
       SMTP_HOST: "${pass:solidblocks/scaleway/tem/smtp_host}"

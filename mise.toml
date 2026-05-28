@@ -63,3 +63,9 @@ run = "./gradlew clean :solidblocks-cli:run --args=\"cloud apply --taint-secrets
 dir = "~/git/solidblocks"
 run = "./gradlew clean :solidblocks-cli:run --args=\"cloud plan ${HOME}/git/infrastructure/pelle.yaml\""
 
+[tasks."yolo"]
+run = """
+trap 'docker compose -f docker-compose.yolo.yml down -v' EXIT
+docker compose -f docker-compose.yolo.yml up --exit-code-from pgbench --abort-on-container-exit
+"""
+
