@@ -37,10 +37,10 @@ services:
     image: ghcr.io/pellepelster/solidblocks-contact:fceb202f63539f30d2b930de627ea147fbdadf1b
     use_floating_ip: true
     environment_vars:
-      SMTP_HOST: "${pass:solidblocks/scaleway/tem/smtp_host}"
-      SMTP_PORT: "${pass:solidblocks/scaleway/tem/smtp_port}"
-      SMTP_USERNAME: "${pass:solidblocks/scaleway/tem/smtp_user}"
-      SMTP_PASSWORD: "${pass:solidblocks/scaleway/tem/smtp_password}"
+      SMTP_HOST: "${secret:solidblocks/scaleway/tem/smtp_host}"
+      SMTP_PORT: "${secret:solidblocks/scaleway/tem/smtp_port}"
+      SMTP_USERNAME: "${secret:solidblocks/scaleway/tem/smtp_user}"
+      SMTP_PASSWORD: "${secret:solidblocks/scaleway/tem/smtp_password}"
       SMTP_RECIPIENT: pelle@pelle.io
       SMTP_FROM: info@tem.solidblocks.de
     endpoints:
