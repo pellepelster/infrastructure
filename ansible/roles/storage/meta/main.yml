@@ -1,0 +1,10 @@
+---
+galaxy_info:
+  role_name: storage
+  description: Format and mount an attached Hetzner Cloud volume
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Debian
+      versions:
+        - trixie
+dependencies: []

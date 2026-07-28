@@ -1,0 +1,10 @@
+---
+galaxy_info:
+  role_name: www_public
+  description: Install and configure the Caddy web server from the upstream apt repository
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Debian
+      versions:
+        - trixie
+dependencies: []

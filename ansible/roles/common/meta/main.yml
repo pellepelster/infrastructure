@@ -1,0 +1,10 @@
+---
+galaxy_info:
+  role_name: common
+  description: Keep the base system packages up to date
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Debian
+      versions:
+        - trixie
+dependencies: []

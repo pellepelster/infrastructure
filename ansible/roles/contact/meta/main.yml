@@ -1,0 +1,10 @@
+---
+galaxy_info:
+  role_name: contact
+  description: Run the solidblocks contact backend as a podman container
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Debian
+      versions:
+        - trixie
+dependencies: []

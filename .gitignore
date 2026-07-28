@@ -1,10 +1,11 @@
 .terraform
 .idea
-terraform.tfstate.backup
-.terraform.lock.hcl
+terraform.tfstate.*
 .bundle/
 .vendor/
 reports/
 blcks.log
 pelle_default_known_hosts
 pelle_default_ssh_config
+.ssh/
+.ansible/

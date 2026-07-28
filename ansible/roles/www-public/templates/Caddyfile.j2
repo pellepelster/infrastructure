@@ -1,0 +1,43 @@
+# Managed by ansible (roles/www-public) - local changes will be overwritten.
+{% if www_public_email %}
+{
+	email {{ www_public_email }}
+}
+{% endif %}
+
+# No includeSubDomains: the wildcard records resolve every subdomain, and HSTS
+# for the whole tree would outlive any subdomain later served elsewhere.
+(security_headers) {
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+}
+{% for site in www_public_sites %}
+
+{{ site.domains | join(', ') }} {
+	root * {{ www_public_storage_dir }}/{{ site.name }}/html
+	encode zstd gzip
+	file_server
+	import security_headers
+
+	log {
+		output file {{ www_public_log_dir }}/{{ site.name }}.access.log
+		format json
+	}
+}
+{% endfor %}
+{% for proxy in www_public_reverse_proxies %}
+
+{{ proxy.domains | join(', ') }} {
+	encode zstd gzip
+	reverse_proxy {{ proxy.upstream }}
+	import security_headers
+
+	log {
+		output file {{ www_public_log_dir }}/{{ proxy.name }}.access.log
+		format json
+	}
+}
+{% endfor %}

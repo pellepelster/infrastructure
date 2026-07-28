@@ -1,9 +1,8 @@
 resource "hcloud_zone_rrset" "root_zone_ipv4" {
-  count = var.ipv4_address == null ? 0 : 1
-  zone  = var.zone
-  name  = "@"
-  type  = "A"
-  ttl   = 60
+  zone = var.zone
+  name = "@"
+  type = "A"
+  ttl  = 60
 
   records = [
     { value = var.ipv4_address },
@@ -11,11 +10,34 @@ resource "hcloud_zone_rrset" "root_zone_ipv4" {
 }
 
 resource "hcloud_zone_rrset" "root_zone_ipv6" {
-  count = var.ipv6_address == null ? 0 : 1
-  zone  = var.zone
-  name  = "@"
-  type  = "AAAA"
-  ttl   = 60
+  zone = var.zone
+  name = "@"
+  type = "AAAA"
+  ttl  = 60
+
+  records = [
+    { value = var.ipv6_address },
+  ]
+}
+
+# RFC 4592: a wildcard is only synthesised for names absent from the zone, so
+# the mail, DKIM and DMARC names below still win.
+resource "hcloud_zone_rrset" "wildcard_zone_ipv4" {
+  zone = var.zone
+  name = "*"
+  type = "A"
+  ttl  = 60
+
+  records = [
+    { value = var.ipv4_address },
+  ]
+}
+
+resource "hcloud_zone_rrset" "wildcard_zone_ipv6" {
+  zone = var.zone
+  name = "*"
+  type = "AAAA"
+  ttl  = 60
 
   records = [
     { value = var.ipv6_address },
@@ -81,5 +103,18 @@ resource "hcloud_zone_rrset" "dmarc" {
   ttl  = 60
   records = [
     { value = "\"v=DMARC1; p=quarantine\"" },
+  ]
+}
+
+# Caddy issues via let's encrypt and falls back to zerossl, which is sectigo.
+resource "hcloud_zone_rrset" "caa" {
+  zone = var.zone
+  name = "@"
+  type = "CAA"
+  ttl  = 60
+
+  records = [
+    { value = "0 issue \"letsencrypt.org\"" },
+    { value = "0 issue \"sectigo.com\"" },
   ]
 }

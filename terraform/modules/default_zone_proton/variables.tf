@@ -2,14 +2,13 @@ variable "zone" {
   type = string
 }
 
+# Points apex and wildcard at this host.
 variable "ipv4_address" {
-  type    = string
-  default = null
+  type = string
 }
 
 variable "ipv6_address" {
-  type    = string
-  default = null
+  type = string
 }
 
 variable "proton_mail_verification" {
