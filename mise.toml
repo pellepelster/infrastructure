@@ -4,22 +4,18 @@ env_shell_expand = true
 [env]
 HCLOUD_TOKEN = "{{ get_env(name='HCLOUD_TOKEN', default=exec(command='pass infrastructure/pelle.io/cloud_api_token')) }}"
 TF_VAR_hcloud_token = "{{ get_env(name='HCLOUD_TOKEN', default=exec(command='pass infrastructure/pelle.io/cloud_api_token')) }}"
-TF_VAR_scw_access_key = "{{ get_env(name='SCW_ACCESS_KEY', default=exec(command='pass scaleway/solidblocks.de/terraform/access_key_id')) }}"
-TF_VAR_scw_secret_key = "{{ get_env(name='SCW_SECRET_KEY', default=exec(command='pass scaleway/solidblocks.de/terraform/secret_key')) }}"
-TF_VAR_scw_default_organization_id = "{{ get_env(name='SCW_DEFAULT_ORGANIZATION_ID', default=exec(command='pass scaleway/solidblocks.de/organization_id')) }}"
 GITHUB_TOKEN = "{{ get_env(name='GITHUB_TOKEN', default=exec(command='pass github/pellepelster/pat/admin')) }}"
 SCW_ACCESS_KEY = "{{ get_env(name='SCW_ACCESS_KEY', default=exec(command='pass scaleway/solidblocks.de/terraform/access_key_id')) }}"
 SCW_SECRET_KEY = "{{ get_env(name='SCW_SECRET_KEY', default=exec(command='pass scaleway/solidblocks.de/terraform/secret_key')) }}"
 SCW_DEFAULT_ORGANIZATION_ID = "{{ get_env(name='SCW_DEFAULT_ORGANIZATION_ID', default=exec(command='pass scaleway/solidblocks.de/organization_id')) }}"
 AWS_ACCESS_KEY_ID = "{{ get_env(name='AWS_ACCESS_KEY_ID', default=exec(command='pass aws/pelle/pelle_io/admin/access_key')) }}"
 AWS_SECRET_ACCESS_KEY = "{{ get_env(name='AWS_SECRET_ACCESS_KEY', default=exec(command='pass aws/pelle/pelle_io/admin/secret_access_key')) }}"
-TF_VAR_aws_access_key_id = "{{ get_env(name='AWS_ACCESS_KEY_ID', default=exec(command='pass aws/pelle/pelle_io/admin/access_key')) }}"
-TF_VAR_aws_secret_access_key = "{{ get_env(name='AWS_SECRET_ACCESS_KEY', default=exec(command='pass aws/pelle/pelle_io/admin/secret_access_key')) }}"
 
 [tools]
 terraform="1.15.2"
 pipx="latest"
 ansible="14.2.0"
+"pipx:ansible-lint"="latest"
 
 [tasks."format"]
 run = "terraform fmt -recursive terraform"
@@ -146,6 +142,20 @@ ssh -F "${ssh_config}" www-public "cat /storage/data/www-public/logs/${site}.acc
 echo "report written to ${reports_dir}/${site}.html"
 '''
 
+[tasks."ansible:bootstrap"]
+dir = "ansible"
+run = "ansible-galaxy collection install -r requirements.yml -p ~/.ansible/collections --force"
+sources = ["ansible/requirements.yml"]
+outputs = { auto = true }
+
+[tasks."ansible:lint"]
+dir = "ansible"
+depends = ["ansible:bootstrap"]
+run = "ansible-lint"
+
+[tasks."lint"]
+depends = ["ansible:lint"]
+
 [tasks."www-public:ansible:ping"]
 dir = "ansible"
 run = "ansible www_public -m ping"
@@ -168,6 +178,7 @@ run = [
 run = [
   "mise run aws-org:tf:apply",
   "mise run aws:tf:apply",
+  "mise run github:tf:apply",
   "mise run www-public:tf:apply",
   "mise run www-public:ansible:apply",
 ]

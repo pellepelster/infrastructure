@@ -1,7 +1,9 @@
 ---
 galaxy_info:
   role_name: contact
+  author: Christian 'Pelle' Pelster
   description: Run the solidblocks contact backend as a podman container
+  license: MIT
   min_ansible_version: "2.15"
   platforms:
     - name: Debian
