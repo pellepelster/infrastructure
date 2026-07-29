@@ -2,14 +2,13 @@
 env_shell_expand = true
 
 [env]
-HCLOUD_TOKEN = "{{ get_env(name='HCLOUD_TOKEN', default=exec(command='pass infrastructure/pelle.io/cloud_api_token')) }}"
-TF_VAR_hcloud_token = "{{ get_env(name='HCLOUD_TOKEN', default=exec(command='pass infrastructure/pelle.io/cloud_api_token')) }}"
-GITHUB_TOKEN = "{{ get_env(name='GITHUB_TOKEN', default=exec(command='pass github/pellepelster/pat/admin')) }}"
-SCW_ACCESS_KEY = "{{ get_env(name='SCW_ACCESS_KEY', default=exec(command='pass scaleway/solidblocks.de/terraform/access_key_id')) }}"
-SCW_SECRET_KEY = "{{ get_env(name='SCW_SECRET_KEY', default=exec(command='pass scaleway/solidblocks.de/terraform/secret_key')) }}"
-SCW_DEFAULT_ORGANIZATION_ID = "{{ get_env(name='SCW_DEFAULT_ORGANIZATION_ID', default=exec(command='pass scaleway/solidblocks.de/organization_id')) }}"
-AWS_ACCESS_KEY_ID = "{{ get_env(name='AWS_ACCESS_KEY_ID', default=exec(command='pass aws/pelle/pelle_io/admin/access_key')) }}"
-AWS_SECRET_ACCESS_KEY = "{{ get_env(name='AWS_SECRET_ACCESS_KEY', default=exec(command='pass aws/pelle/pelle_io/admin/secret_access_key')) }}"
+HCLOUD_TOKEN = "{{ get_env(name='HCLOUD_TOKEN', default=exec(command='[ -n \"$CI\" ] || pass infrastructure/pelle.io/cloud_api_token')) }}"
+GITHUB_TOKEN = "{{ get_env(name='GITHUB_TOKEN', default=exec(command='[ -n \"$CI\" ] || pass github/pellepelster/pat/admin')) }}"
+SCW_ACCESS_KEY = "{{ get_env(name='SCW_ACCESS_KEY', default=exec(command='[ -n \"$CI\" ] || pass scaleway/solidblocks.de/terraform/access_key_id')) }}"
+SCW_SECRET_KEY = "{{ get_env(name='SCW_SECRET_KEY', default=exec(command='[ -n \"$CI\" ] || pass scaleway/solidblocks.de/terraform/secret_key')) }}"
+SCW_DEFAULT_ORGANIZATION_ID = "{{ get_env(name='SCW_DEFAULT_ORGANIZATION_ID', default=exec(command='[ -n \"$CI\" ] || pass scaleway/solidblocks.de/organization_id')) }}"
+AWS_ACCESS_KEY_ID = "{{ get_env(name='AWS_ACCESS_KEY_ID', default=exec(command='[ -n \"$CI\" ] || pass aws/pelle/pelle_io/admin/access_key')) }}"
+AWS_SECRET_ACCESS_KEY = "{{ get_env(name='AWS_SECRET_ACCESS_KEY', default=exec(command='[ -n \"$CI\" ] || pass aws/pelle/pelle_io/admin/secret_access_key')) }}"
 
 [tools]
 terraform="1.15.2"
