@@ -2,13 +2,6 @@
 env_shell_expand = true
 
 [env]
-HCLOUD_TOKEN = "{{ get_env(name='HCLOUD_TOKEN', default=exec(command='[ -n \"$CI\" ] || pass infrastructure/pelle.io/cloud_api_token')) }}"
-GITHUB_TOKEN = "{{ get_env(name='GITHUB_TOKEN', default=exec(command='[ -n \"$CI\" ] || pass github/pellepelster/pat/admin')) }}"
-SCW_ACCESS_KEY = "{{ get_env(name='SCW_ACCESS_KEY', default=exec(command='[ -n \"$CI\" ] || pass scaleway/solidblocks.de/terraform/access_key_id')) }}"
-SCW_SECRET_KEY = "{{ get_env(name='SCW_SECRET_KEY', default=exec(command='[ -n \"$CI\" ] || pass scaleway/solidblocks.de/terraform/secret_key')) }}"
-SCW_DEFAULT_ORGANIZATION_ID = "{{ get_env(name='SCW_DEFAULT_ORGANIZATION_ID', default=exec(command='[ -n \"$CI\" ] || pass scaleway/solidblocks.de/organization_id')) }}"
-AWS_ACCESS_KEY_ID = "{{ get_env(name='AWS_ACCESS_KEY_ID', default=exec(command='[ -n \"$CI\" ] || pass aws/pelle/pelle_io/admin/access_key')) }}"
-AWS_SECRET_ACCESS_KEY = "{{ get_env(name='AWS_SECRET_ACCESS_KEY', default=exec(command='[ -n \"$CI\" ] || pass aws/pelle/pelle_io/admin/secret_access_key')) }}"
 
 [tools]
 terraform="1.15.2"
@@ -18,18 +11,6 @@ ansible="14.2.0"
 
 [tasks."format"]
 run = "terraform fmt -recursive terraform"
-
-[tasks."aws:tf:init"]
-dir = "terraform/aws"
-run = "terraform init -upgrade"
-
-[tasks."aws:tf:plan"]
-dir = "terraform/aws"
-run = "terraform plan"
-
-[tasks."aws:tf:apply"]
-dir = "terraform/aws"
-run = "terraform apply"
 
 [tasks."aws-org:tf:init"]
 dir = "terraform/aws-org"
@@ -62,6 +43,26 @@ fi
 AWS_ACCESS_KEY_ID = "{{ exec(command='pass aws/pelle/org/admin/access_key') }}"
 AWS_SECRET_ACCESS_KEY = "{{ exec(command='pass aws/pelle/org/admin/secret_access_key') }}"
 
+[tasks."aws:tf:init"]
+dir = "terraform/aws"
+run = "terraform init -upgrade"
+
+[tasks."aws:tf:plan".env]
+AWS_ACCESS_KEY_ID = "{{ get_env(name='AWS_ACCESS_KEY_ID', default=exec(command='pass aws/pelle/pelle_io/admin/access_key')) }}"
+AWS_SECRET_ACCESS_KEY = "{{ get_env(name='AWS_SECRET_ACCESS_KEY', default=exec(command='pass aws/pelle/pelle_io/admin/secret_access_key')) }}"
+
+[tasks."aws:tf:plan"]
+dir = "terraform/aws"
+run = "terraform plan"
+
+[tasks."aws:tf:apply".env]
+AWS_ACCESS_KEY_ID = "{{ get_env(name='AWS_ACCESS_KEY_ID', default=exec(command='pass aws/pelle/pelle_io/admin/access_key')) }}"
+AWS_SECRET_ACCESS_KEY = "{{ get_env(name='AWS_SECRET_ACCESS_KEY', default=exec(command='pass aws/pelle/pelle_io/admin/secret_access_key')) }}"
+
+[tasks."aws:tf:apply"]
+dir = "terraform/aws"
+run = "terraform apply"
+
 [tasks."github:tf:init"]
 dir = "terraform/github"
 run = "terraform init -upgrade"
@@ -74,12 +75,28 @@ run = "terraform plan"
 dir = "terraform/github"
 run = "terraform apply"
 
-[tasks."www-public:tf:plan"]
-dir = "terraform/www-public"
+[tasks."pelle-io:tf:plan".env]
+AWS_ACCESS_KEY_ID = "{{ get_env(name='AWS_ACCESS_KEY_ID', default=exec(command='pass aws/pelle/pelle_io/admin/access_key')) }}"
+AWS_SECRET_ACCESS_KEY = "{{ get_env(name='AWS_SECRET_ACCESS_KEY', default=exec(command='pass aws/pelle/pelle_io/admin/secret_access_key')) }}"
+HCLOUD_TOKEN = "{{ get_env(name='HCLOUD_TOKEN', default=exec(command='pass infrastructure/pelle.io/cloud_api_token')) }}"
+SCW_ACCESS_KEY = "{{ get_env(name='SCW_ACCESS_KEY', default=exec(command='pass scaleway/solidblocks.de/terraform/access_key_id')) }}"
+SCW_SECRET_KEY = "{{ get_env(name='SCW_SECRET_KEY', default=exec(command='pass scaleway/solidblocks.de/terraform/secret_key')) }}"
+SCW_DEFAULT_ORGANIZATION_ID = "{{ get_env(name='SCW_DEFAULT_ORGANIZATION_ID', default=exec(command='pass scaleway/solidblocks.de/organization_id')) }}"
+
+[tasks."pelle-io:tf:plan"]
+dir = "terraform/pelle.io"
 run = "terraform plan"
 
-[tasks."www-public:tf:apply"]
-dir = "terraform/www-public"
+[tasks."pelle-io:tf:apply".env]
+AWS_ACCESS_KEY_ID = "{{ get_env(name='AWS_ACCESS_KEY_ID', default=exec(command='pass aws/pelle/pelle_io/admin/access_key')) }}"
+AWS_SECRET_ACCESS_KEY = "{{ get_env(name='AWS_SECRET_ACCESS_KEY', default=exec(command='pass aws/pelle/pelle_io/admin/secret_access_key')) }}"
+HCLOUD_TOKEN = "{{ get_env(name='HCLOUD_TOKEN', default=exec(command='pass infrastructure/pelle.io/cloud_api_token')) }}"
+SCW_ACCESS_KEY = "{{ get_env(name='SCW_ACCESS_KEY', default=exec(command='pass scaleway/solidblocks.de/terraform/access_key_id')) }}"
+SCW_SECRET_KEY = "{{ get_env(name='SCW_SECRET_KEY', default=exec(command='pass scaleway/solidblocks.de/terraform/secret_key')) }}"
+SCW_DEFAULT_ORGANIZATION_ID = "{{ get_env(name='SCW_DEFAULT_ORGANIZATION_ID', default=exec(command='pass scaleway/solidblocks.de/organization_id')) }}"
+
+[tasks."pelle-io:tf:apply"]
+dir = "terraform/pelle.io"
 run = """
 set -e
 terraform apply
@@ -91,11 +108,11 @@ if command -v pass >/dev/null 2>&1; then
 fi
 """
 
-[tasks."www-public:tf:init"]
+[tasks."pelle-io:tf:init"]
 dir = "terraform/www-public"
 run = "terraform init -upgrade"
 
-[tasks."www-public:deploy"]
+[tasks."pelle-io:deploy"]
 dir = "{{cwd}}"
 usage = '''
 arg "<site>" help="site name as configured in terraform/www-public"
@@ -116,14 +133,14 @@ if [ ! -d "${path}" ]; then
 fi
 
 if ! ssh -F "${ssh_config}" www-public test -d "${remote_dir}"; then
-  echo "no html dir for site '${site}' on www-public (${remote_dir}), run www-public:ansible:apply first" >&2
+  echo "no html dir for site '${site}' on www-public (${remote_dir}), run pelle-io:ansible:apply first" >&2
   exit 1
 fi
 
 scp -F "${ssh_config}" -r -- "${path}/." "www-public:${remote_dir}/"
 '''
 
-[tasks."www-public:report"]
+[tasks."pelle-io:report"]
 dir = "{{cwd}}"
 usage = '''
 arg "<site>" help="site name as configured in terraform/www-public"
@@ -155,22 +172,22 @@ run = "ansible-lint"
 [tasks."lint"]
 depends = ["ansible:lint"]
 
-[tasks."www-public:ansible:ping"]
+[tasks."pelle-io:ansible:ping"]
 dir = "ansible"
 run = "ansible www_public -m ping"
 
-[tasks."www-public:ansible:check"]
+[tasks."pelle-io:ansible:check"]
 dir = "ansible"
 run = "ansible-playbook site.yml --check --diff"
 
-[tasks."www-public:ansible:apply"]
+[tasks."pelle-io:ansible:apply"]
 dir = "ansible"
 run = "ansible-playbook site.yml"
 
-[tasks."www-public:apply"]
+[tasks."pelle-io:apply"]
 run = [
-  "mise run www-public:tf:apply",
-  "mise run www-public:ansible:apply",
+  "mise run pelle-io:tf:apply",
+  "mise run pelle-io:ansible:apply",
 ]
 
 [tasks."apply"]
@@ -178,15 +195,26 @@ run = [
   "mise run aws-org:tf:apply",
   "mise run aws:tf:apply",
   "mise run github:tf:apply",
-  "mise run www-public:tf:apply",
-  "mise run www-public:ansible:apply",
+  "mise run pelle-io:tf:apply",
+  "mise run pelle-io:ansible:apply",
 ]
 
-[tasks."www-public:dev:preflight-check"]
-dir = "terraform/www-public"
+[tasks."pelle-io:dev:preflight-check".env]
+AWS_ACCESS_KEY_ID = "{{ get_env(name='AWS_ACCESS_KEY_ID', default=exec(command='pass aws/pelle/pelle_io/admin/access_key')) }}"
+AWS_SECRET_ACCESS_KEY = "{{ get_env(name='AWS_SECRET_ACCESS_KEY', default=exec(command='pass aws/pelle/pelle_io/admin/secret_access_key')) }}"
+HCLOUD_TOKEN = "{{ get_env(name='HCLOUD_TOKEN', default=exec(command='pass infrastructure/pelle.io/cloud_api_token')) }}"
+SCW_ACCESS_KEY = "{{ get_env(name='SCW_ACCESS_KEY', default=exec(command='pass scaleway/solidblocks.de/terraform/access_key_id')) }}"
+SCW_SECRET_KEY = "{{ get_env(name='SCW_SECRET_KEY', default=exec(command='pass scaleway/solidblocks.de/terraform/secret_key')) }}"
+SCW_DEFAULT_ORGANIZATION_ID = "{{ get_env(name='SCW_DEFAULT_ORGANIZATION_ID', default=exec(command='pass scaleway/solidblocks.de/organization_id')) }}"
+
+[tasks."pelle-io:dev:preflight-check"]
+dir = "terraform/pelle.io"
 run = """
 set -e
 terraform apply -replace=hcloud_server.www_public -auto-approve
-cd ../../ansible
-ansible-playbook site.yml
+mise run aws-org:tf:apply
+mise run aws:tf:apply
+mise run github:tf:apply
+mise run pelle-io:tf:apply
+mise run pelle-io:ansible:apply
 """
