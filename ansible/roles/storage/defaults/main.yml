@@ -1,7 +1,0 @@
----
-storage_device: ""
-
-storage_mount_point: /storage/data
-storage_fstype: ext4
-
-storage_mount_opts: defaults,discard,nofail

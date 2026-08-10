@@ -1,5 +1,6 @@
 locals {
   name = "blcks-${var.environment}"
+  tags = ["environment=${var.environment}"]
 }
 
 resource "scaleway_account_project" "project" {
@@ -8,11 +9,13 @@ resource "scaleway_account_project" "project" {
 
 resource "scaleway_iam_application" "admin" {
   name = "${local.name}-admin"
+  tags = local.tags
 }
 
 resource "scaleway_iam_policy" "admin" {
   name           = "${local.name}-admin"
   application_id = scaleway_iam_application.admin.id
+  tags           = local.tags
 
   rule {
     project_ids          = [scaleway_account_project.project.id]

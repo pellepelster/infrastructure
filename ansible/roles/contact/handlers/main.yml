@@ -1,6 +1,0 @@
----
-- name: Restart contact
-  ansible.builtin.systemd:
-    name: contact.service
-    state: restarted
-    daemon_reload: true

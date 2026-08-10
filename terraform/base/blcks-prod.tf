@@ -5,6 +5,12 @@ provider "aws" {
   assume_role {
     role_arn = "arn:aws:iam::${aws_organizations_account.blcks_prod.id}:role/OrganizationAccountAccessRole"
   }
+
+  default_tags {
+    tags = {
+      environment = "prod"
+    }
+  }
 }
 
 resource "aws_organizations_account" "blcks_prod" {
