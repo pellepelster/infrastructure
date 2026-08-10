@@ -6,10 +6,27 @@ terraform="1.15.2"
 pipx="latest"
 ansible="14.2.0"
 "pipx:ansible-lint"="latest"
+tflint="latest"
 "aqua:betterleaks/betterleaks"="latest"
 
 [tasks."format"]
 run = "terraform fmt -recursive terraform"
+
+[tasks."lint"]
+run = '''
+set -e
+
+terraform fmt -check -recursive terraform
+
+(cd terraform && tflint --recursive)
+
+for stack in base github pelle.io; do
+  export TF_DATA_DIR="$(mktemp -d)"
+  terraform -chdir="terraform/${stack}" init -backend=false -input=false > /dev/null
+  terraform -chdir="terraform/${stack}" validate
+  rm -rf "${TF_DATA_DIR}"
+done
+'''
 
 [tasks."preflight-check"]
 run = '''
