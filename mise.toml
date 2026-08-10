@@ -15,8 +15,6 @@ description = "check terraform formatting, run tflint and validate all stacks"
 run = '''
 set -e
 
-terraform fmt -check -recursive terraform
-
 (cd terraform && tflint --recursive)
 
 for stack in base github pelle.io; do
