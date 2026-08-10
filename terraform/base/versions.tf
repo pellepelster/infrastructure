@@ -3,6 +3,9 @@ terraform {
     aws = {
       source = "hashicorp/aws"
     }
+    scaleway = {
+      source = "scaleway/scaleway"
+    }
   }
 
   required_version = ">= 1.9.0"

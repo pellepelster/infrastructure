@@ -1,0 +1,13 @@
+title = "betterleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Local secrets that never enter git: tfstate is plaintext only in the git-crypt unlocked working tree, and .ssh/ is git-ignored"
+paths = [
+  '''.*\.tfstate$''',
+  '''.*\.tfstate\.backup$''',
+  '''\.terraform/.*''',
+  '''\.ssh/.*''',
+]

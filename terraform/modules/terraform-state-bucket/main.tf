@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "terraform_state" {
-  bucket = "pelle-io-terraform-state"
+  bucket = "${var.name}-terraform-state"
 
   lifecycle {
     prevent_destroy = true
