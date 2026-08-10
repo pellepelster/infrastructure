@@ -3,16 +3,15 @@ env_shell_expand = true
 
 [tools]
 terraform="1.15.2"
-pipx="latest"
-ansible="14.2.0"
-"pipx:ansible-lint"="latest"
 tflint="latest"
 "aqua:betterleaks/betterleaks"="latest"
 
 [tasks."format"]
+description = "format all terraform files"
 run = "terraform fmt -recursive terraform"
 
 [tasks."lint"]
+description = "check terraform formatting, run tflint and validate all stacks"
 run = '''
 set -e
 
@@ -29,10 +28,11 @@ done
 '''
 
 [tasks."preflight-check"]
+description = "verify all tracked terraform state files are git-crypt encrypted and scan for leaked secrets"
 run = '''
 set -e
 
-for state in $(git ls-files 'terraform/base/*.tfstate' 'terraform/base/*.tfstate.backup'); do
+for state in $(git ls-files '*.tfstate' '*.tfstate.backup'); do
   if ! git show ":${state}" | head -c 10 | grep -qa GITCRYPT; then
     echo "ERROR: ${state} is not git-crypt encrypted in the git index" >&2
     exit 1
@@ -43,6 +43,7 @@ betterleaks dir . --redact
 '''
 
 [tasks."base:tf"]
+description = "run terraform in the base stack with org admin credentials from pass"
 env = {
   AWS_ACCESS_KEY_ID = "{{ exec(command='pass aws/pelle/org/admin/access_key') }}",
   AWS_SECRET_ACCESS_KEY = "{{ exec(command='pass aws/pelle/org/admin/secret_access_key') }}",
@@ -50,55 +51,74 @@ env = {
   SCW_SECRET_KEY = "{{ get_env(name='SCW_SECRET_KEY', default=exec(command='pass scaleway/solidblocks.de/admin/secret_key')) }}",
   SCW_DEFAULT_ORGANIZATION_ID = "{{ get_env(name='SCW_DEFAULT_ORGANIZATION_ID', default=exec(command='pass scaleway/solidblocks.de/organization_id')) }}"  }
 usage = '''
-arg "<stack>" help="terraform stack directory below terraform/"
 arg "<args>" var=#true help="arguments passed to terraform"
 '''
 run = '''
-stack="${usage_stack}"
 args="${usage_args}"
-terraform -chdir="terraform/$stack" $args
+terraform -chdir="terraform/base" $args
 '''
 
 [tasks."base:tf:init"]
-run = 'mise run base:tf -- base init -upgrade -reconfigure'
+description = "initialize the base stack"
+run = 'mise run base:tf -- init -reconfigure'
+
+[tasks."base:tf:upgrade"]
+description = "upgrade provider versions of the base stack"
+run = 'mise run base:tf -- init -upgrade -reconfigure'
 
 [tasks."base:tf:plan"]
-run = 'mise run base:tf -- base plan'
+description = "plan the base stack"
+run = 'mise run base:tf -- plan'
 
 [tasks."base:tf:apply"]
-run = """
-mise run base:tf -- base apply
-echo "$(terraform -chdir=terraform/base output -raw pelle_io_admin_access_key)" | pass insert --multiline --force aws/pelle/pelle_io/admin/access_key
-echo "$(terraform -chdir=terraform/base output -raw pelle_io_admin_secret_access_key)" | pass insert --multiline --force aws/pelle/pelle_io/admin/secret_access_key
+description = "apply the base stack and store the generated account credentials in pass"
+run = '''
+set -e
 
-echo "$(terraform -chdir=terraform/base output -raw blcks_dev_admin_access_key)" | pass insert --multiline --force aws/pelle/blcks-dev/admin/access_key
-echo "$(terraform -chdir=terraform/base output -raw blcks_dev_admin_secret_access_key)" | pass insert --multiline --force aws/pelle/blcks-dev/admin/secret_access_key
-echo "$(terraform -chdir=terraform/base output -raw blcks_dev_account_id)" | pass insert --multiline --force aws/pelle/blcks-dev/account_id
-echo "$(terraform -chdir=terraform/base output -raw blcks_dev_scaleway_access_key)" | pass insert --multiline --force scaleway/solidblocks.de/blcks-dev/access_key_id
-echo "$(terraform -chdir=terraform/base output -raw blcks_dev_scaleway_secret_key)" | pass insert --multiline --force scaleway/solidblocks.de/blcks-dev/secret_key
-echo "$(terraform -chdir=terraform/base output -raw blcks_dev_project_id)" | pass insert --multiline --force scaleway/solidblocks.de/blcks-dev/project_id
+mise run base:tf -- apply
 
-echo "$(terraform -chdir=terraform/base output -raw blcks_prod_admin_access_key)" | pass insert --multiline --force aws/pelle/blcks-prod/admin/access_key
-echo "$(terraform -chdir=terraform/base output -raw blcks_prod_admin_secret_access_key)" | pass insert --multiline --force aws/pelle/blcks-prod/admin/secret_access_key
-echo "$(terraform -chdir=terraform/base output -raw blcks_prod_account_id)" | pass insert --multiline --force aws/pelle/blcks-prod/account_id
-echo "$(terraform -chdir=terraform/base output -raw blcks_prod_scaleway_access_key)" | pass insert --multiline --force scaleway/solidblocks.de/blcks-prod/access_key_id
-echo "$(terraform -chdir=terraform/base output -raw blcks_prod_scaleway_secret_key)" | pass insert --multiline --force scaleway/solidblocks.de/blcks-prod/secret_key
-echo "$(terraform -chdir=terraform/base output -raw blcks_prod_project_id)" | pass insert --multiline --force scaleway/solidblocks.de/blcks-prod/project_id
-"""
+while read -r output secret; do
+  terraform -chdir=terraform/base output -raw "${output}" | pass insert --multiline --force "${secret}"
+done << EOF
+pelle_io_admin_access_key aws/pelle/pelle_io/admin/access_key
+pelle_io_admin_secret_access_key aws/pelle/pelle_io/admin/secret_access_key
+blcks_dev_admin_access_key aws/pelle/blcks-dev/admin/access_key
+blcks_dev_admin_secret_access_key aws/pelle/blcks-dev/admin/secret_access_key
+blcks_dev_account_id aws/pelle/blcks-dev/account_id
+blcks_dev_scaleway_access_key scaleway/solidblocks.de/blcks-dev/access_key_id
+blcks_dev_scaleway_secret_key scaleway/solidblocks.de/blcks-dev/secret_key
+blcks_dev_project_id scaleway/solidblocks.de/blcks-dev/project_id
+blcks_prod_admin_access_key aws/pelle/blcks-prod/admin/access_key
+blcks_prod_admin_secret_access_key aws/pelle/blcks-prod/admin/secret_access_key
+blcks_prod_account_id aws/pelle/blcks-prod/account_id
+blcks_prod_scaleway_access_key scaleway/solidblocks.de/blcks-prod/access_key_id
+blcks_prod_scaleway_secret_key scaleway/solidblocks.de/blcks-prod/secret_key
+blcks_prod_project_id scaleway/solidblocks.de/blcks-prod/project_id
+EOF
+'''
 
 [tasks."github:tf:init"]
+description = "initialize the github stack"
+dir = "terraform/github"
+run = "terraform init"
+
+[tasks."github:tf:upgrade"]
+description = "upgrade provider versions of the github stack"
 dir = "terraform/github"
 run = "terraform init -upgrade"
 
 [tasks."github:tf:plan"]
+description = "plan the github stack"
 dir = "terraform/github"
 run = "terraform plan"
 
 [tasks."github:tf:apply"]
+description = "apply the github stack"
 dir = "terraform/github"
 run = "terraform apply"
 
 [tasks."pelle-io:tf"]
+description = "run terraform in the pelle.io stack with credentials from pass"
 env = {
   AWS_ACCESS_KEY_ID = "{{ get_env(name='AWS_ACCESS_KEY_ID', default=exec(command='pass aws/pelle/pelle_io/admin/access_key')) }}",
   AWS_SECRET_ACCESS_KEY = "{{ get_env(name='AWS_SECRET_ACCESS_KEY', default=exec(command='pass aws/pelle/pelle_io/admin/secret_access_key')) }}",
@@ -112,22 +132,31 @@ args="${usage_args}"
 terraform -chdir="terraform/pelle.io" $args
 '''
 
+[tasks."pelle-io:tf:init"]
+description = "initialize the pelle.io stack"
+run = "mise run pelle-io:tf -- init"
+
+[tasks."pelle-io:tf:upgrade"]
+description = "upgrade provider versions of the pelle.io stack"
+run = "mise run pelle-io:tf -- init -upgrade"
+
 [tasks."pelle-io:tf:plan"]
+description = "plan the pelle.io stack"
 run = 'mise run pelle-io:tf -- plan'
 
 [tasks."pelle-io:tf:apply"]
+description = "apply the pelle.io stack"
 run = 'mise run pelle-io:tf -- apply'
 
-[tasks."pelle-io:tf:init"]
-run = "mise run pelle-io:tf -- init -upgrade"
-
 [tasks."apply"]
+description = "apply the base and pelle.io stacks"
 run = [
   "mise run base:tf:apply",
   "mise run pelle-io:tf:apply",
 ]
 
 [tasks."plan"]
+description = "plan the base and pelle.io stacks"
 run = [
   "mise run base:tf:plan",
   "mise run pelle-io:tf:plan",
