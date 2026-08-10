@@ -15,14 +15,19 @@ description = "check terraform formatting, run tflint and validate all stacks"
 run = '''
 set -e
 
+terraform fmt -check -recursive terraform
+
 (cd terraform && tflint --recursive)
 
+workdir="$(mktemp -d)"
+tar -c --exclude='*.tfstate' --exclude='*.tfstate.backup' --exclude='.terraform' terraform | tar -x -C "${workdir}"
+
 for stack in base github pelle.io; do
-  export TF_DATA_DIR="$(mktemp -d)"
-  terraform -chdir="terraform/${stack}" init -backend=false -input=false > /dev/null
-  terraform -chdir="terraform/${stack}" validate
-  rm -rf "${TF_DATA_DIR}"
+  terraform -chdir="${workdir}/terraform/${stack}" init -backend=false -input=false > /dev/null
+  terraform -chdir="${workdir}/terraform/${stack}" validate
 done
+
+rm -rf "${workdir}"
 '''
 
 [tasks."preflight-check"]
