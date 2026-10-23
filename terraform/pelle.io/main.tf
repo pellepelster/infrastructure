@@ -1,6 +1,6 @@
 locals {
-  ipv4 = "178.104.11.60"
-  ipv6 = "2a01:4f8:c2c:964d::1"
+  ipv4 = "167.233.42.241"
+  ipv6 = "2a01:4f8:1c1a:2d07::1"
 }
 
 module "dns_pelle_io" {

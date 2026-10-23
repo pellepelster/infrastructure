@@ -88,6 +88,7 @@ pelle_io_admin_secret_access_key aws/pelle/pelle_io/admin/secret_access_key
 blcks_dev_admin_access_key aws/pelle/blcks-dev/admin/access_key
 blcks_dev_admin_secret_access_key aws/pelle/blcks-dev/admin/secret_access_key
 blcks_dev_account_id aws/pelle/blcks-dev/account_id
+blcks_dev_admin_password aws/pelle/blcks-dev/admin/password
 blcks_dev_scaleway_access_key scaleway/solidblocks.de/blcks-dev/access_key_id
 blcks_dev_scaleway_secret_key scaleway/solidblocks.de/blcks-dev/secret_key
 blcks_dev_project_id scaleway/solidblocks.de/blcks-dev/project_id
@@ -97,6 +98,7 @@ blcks_prod_account_id aws/pelle/blcks-prod/account_id
 blcks_prod_scaleway_access_key scaleway/solidblocks.de/blcks-prod/access_key_id
 blcks_prod_scaleway_secret_key scaleway/solidblocks.de/blcks-prod/secret_key
 blcks_prod_project_id scaleway/solidblocks.de/blcks-prod/project_id
+blcks_prod_admin_password aws/pelle/blcks-prod/admin/password
 EOF
 '''
 
