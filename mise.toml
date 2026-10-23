@@ -83,8 +83,9 @@ mise run base:tf -- apply
 while read -r output secret; do
   terraform -chdir=terraform/base output -raw "${output}" | pass insert --multiline --force "${secret}"
 done << EOF
-pelle_io_admin_access_key aws/pelle/pelle_io/admin/access_key
-pelle_io_admin_secret_access_key aws/pelle/pelle_io/admin/secret_access_key
+pelle_io_admin_access_key aws/pelle/pelle-io/admin/access_key
+pelle_io_admin_secret_access_key aws/pelle/pelle-io/admin/secret_access_key
+pelle_io_admin_password aws/pelle/pelle-io/admin/password
 blcks_dev_admin_access_key aws/pelle/blcks-dev/admin/access_key
 blcks_dev_admin_secret_access_key aws/pelle/blcks-dev/admin/secret_access_key
 blcks_dev_account_id aws/pelle/blcks-dev/account_id

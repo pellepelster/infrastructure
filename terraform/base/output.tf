@@ -11,6 +11,11 @@ output "pelle_io_admin_access_key" {
   sensitive = true
 }
 
+output "pelle_io_admin_password" {
+  value     = aws_iam_user_login_profile.pelle_io_admin.password
+  sensitive = true
+}
+
 output "pelle_io_admin_secret_access_key" {
   value     = aws_iam_access_key.pelle_io_admin.secret
   sensitive = true

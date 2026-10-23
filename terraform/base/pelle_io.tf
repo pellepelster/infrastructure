@@ -12,18 +12,23 @@ resource "aws_organizations_account" "pelle_io" {
 }
 
 resource "aws_iam_user" "pelle_io_admin" {
+  name     = "admin"
   provider = aws.pelle_io
-  name     = "pelle-io-admin"
 }
 
 resource "aws_iam_user_policy_attachment" "pelle_io_admin" {
-  provider   = aws.pelle_io
   user       = aws_iam_user.pelle_io_admin.name
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+  provider   = aws.pelle_io
 }
 
 resource "aws_iam_access_key" "pelle_io_admin" {
-  provider = aws.pelle_io
   user     = aws_iam_user.pelle_io_admin.name
+  provider = aws.pelle_io
 }
 
+resource "aws_iam_user_login_profile" "pelle_io_admin" {
+  user                    = aws_iam_user.pelle_io_admin.name
+  password_reset_required = true
+  provider                = aws.pelle_io
+}
